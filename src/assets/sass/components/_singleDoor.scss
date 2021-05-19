@@ -1,0 +1,20 @@
+.map {
+    border-radius: 42px;
+    background-color: $black-two;
+    padding: 18px 0 31px;
+    text-align: center;
+    width: 100%;
+    margin-top: 28px;
+    margin-bottom: 10px;
+    img {
+        cursor: pointer;
+    }
+    svg{
+        g{
+            fill: rgba(255, 237, 52, 0.31);
+            circle{
+                fill: transparent;
+            }
+        }
+    }
+}

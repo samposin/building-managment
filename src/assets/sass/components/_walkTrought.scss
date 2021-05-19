@@ -1,0 +1,16 @@
+.walk-trought{
+    .buttons{
+        margin-top: auto;
+    }
+    span {
+        margin-right: 30px;
+    }
+    .steps{
+        p {
+            cursor: pointer;
+            &:first-of-type{
+                color: $golden-yellow;
+            }
+        }
+    }
+}

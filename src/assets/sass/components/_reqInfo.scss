@@ -1,0 +1,15 @@
+.req-info {
+    display: flex;
+    flex-direction: column;
+    div{
+        display: flex;
+        gap: 15px;
+        // border: 1px solid;
+        .req-p{
+            color: $cool-grey;
+            display: flex;
+            justify-content: flex-end;
+            width: 70px;
+        }
+    }
+}

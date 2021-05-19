@@ -1,0 +1,20 @@
+.add-many{
+    width:100%;
+    height: calc(100% - 113px);;
+    @include flex(center, center);
+    flex-direction: column;
+    background: url("../icons//svg/addMany.svg") no-repeat;
+    background-size: 100% 100%;
+    label {
+        color: $cool-grey;
+        margin-bottom: 33px;
+    }
+    .or {
+        color: $charcoal-grey;
+        margin-bottom: 33px;
+    }
+    .upload{
+        height: 42px;
+        padding: 0 30px;
+    }
+  }

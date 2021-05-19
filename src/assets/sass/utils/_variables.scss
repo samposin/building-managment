@@ -1,0 +1,56 @@
+// Primary Color
+$pale-grey: #e4e6ea;
+$azure: #178fed;
+$azure-two: #1daefc;
+$golden-yellow: #fec32d;
+$charcoal-grey: #3a3b3c;
+$peachy-pink: #fd9493;
+$lightish-green: #86de6c;
+$black: #191919;
+$black-two: #121212;
+$cool-grey: #b1b3b7;
+$white: #ffffff;
+$dark-sky-blue: #2491ea;
+$banana-yellow: #feeb4a;
+$golden-yellow: #fec32d;
+$brownish-grey: #707070;
+$coral: #f1524b;
+$weird-green: #36e676;
+$weird-green-two: #25e871;
+$sky-blue: #48c2f9;
+
+//Shadow
+$shadow-1: 0px 10px 50px 0px rgba(77,86,106, 0.73);
+
+//Font sizes
+$font-size-xs: 12px;
+$font-size-sm: 16px;
+$font-size-md: 20px;
+$font-size-lg: 24px;
+$font-size-xl: 48px;
+
+// Font Names
+$font-primary: "SFPro";
+
+//==================================//
+// Don't miss with those variabeles //
+//==================================//
+
+// Breakpoint
+$breakpoint-sm: 576px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 992px;
+$breakpoint-xl: 1200px;
+$breakpoint-xll: 1700px;
+$breakpoint-xxl: 1900px;
+
+//Font Path
+$font-primary-medium-path: "../fonts/" + $font-primary + "/" + $font-primary + "-Medium.ttf";
+$font-primary-bold-path: "../fonts/" + $font-primary + "/" + $font-primary + "-Bold.ttf";
+$font-primary-regular-path: "../fonts/" + $font-primary + "/" + $font-primary + "-Regular.ttf";
+
+//Font Family
+$font-primary-medium: $font-primary + " Medium";
+$font-primary-bold: $font-primary + " Bold";
+$font-primary-regular: $font-primary + " Regular";
+

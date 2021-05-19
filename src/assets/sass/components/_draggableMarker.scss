@@ -1,0 +1,28 @@
+// body { margin: 0; padding: 0; }
+#map { 
+    background: url('../icons/svg/Wendt-Floor.svg');
+    background-size: cover;
+    margin: auto;
+}
+.coordinates {
+    // background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    position: absolute;
+    top: 440px;
+    right: 75px;
+    padding: 0px 20px;
+    margin: 0;
+    font-size: 11px;
+    line-height: 18px;
+    border-radius: 3px;
+    display: none;
+}
+.mapboxgl-ctrl-bottom-right{
+    display: none;
+}
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl{
+    display: none !important;
+}
+canvas{
+    opacity: 0;
+}

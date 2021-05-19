@@ -1,0 +1,54 @@
+@import "utils/variables";
+@import "utils/mixins";
+
+
+// 3 - Base;
+@import "base/reset";
+@import "base/typography";
+
+// 4 - Components;
+@import "components/inputs";
+@import "components/tags";
+@import "components/s_button";
+@import "components/dropdown";
+@import "components/input_radio";
+@import "components/sideBar";
+@import "components/objectCard";
+@import "components/customCard";
+@import "components/page";
+@import "components/search";
+@import "components/header";
+@import "components/modal";
+@import "components/addMany";
+@import "components/execMan";
+@import "components/intro";
+@import "components/b_button";
+@import "components/managerPerm";
+@import "components/walkTrought";
+@import "components/objectInfo";
+@import "components/peopleInfo";
+@import "components/singlePerson";
+@import "components/groupInfo";
+@import "components/singleGroup";
+@import "components/singleDoor";
+@import "components/singleBuilding";
+@import "components/deletePerson";
+@import "components/personInfo";
+@import "components/steps";
+@import "components/reqProfil";
+@import "components/reqDesc";
+@import "components/reqInfo";
+@import "components/reqFrom";
+@import "components/reqFor";
+@import "components/reqApproved";
+@import "components/draggableMarker";
+
+// 5 - Layout;
+@import "layout/home";
+@import "layout/login";
+@import "layout/groups";
+@import "layout/people";
+@import "layout/door";
+@import "layout/buildings";
+@import "layout/helpUser";
+@import "layout/permRequest";

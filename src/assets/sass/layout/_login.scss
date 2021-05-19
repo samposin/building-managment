@@ -1,0 +1,54 @@
+.login-container {
+    @include flex(center, center);
+    border: 1px solid;
+    height: 100vh;
+    .logo {
+        position: absolute;
+        top: 41px;
+        right: 67px;
+    }
+    .login-page {
+        position: relative;
+        width: 500px;
+        height: 500px;
+        border-radius: 114px;
+        background-color: rgba(255, 255, 255, 0.9);
+        @include flex(center, center);
+    }
+    .Full-Glow-Orb{
+        position: absolute;
+        top: -29%;
+        text-align: center;
+        color: $charcoal-grey;
+        .welcome {
+            @include flex(center, center);
+            flex-direction: column;
+            @include for-size(desktop-down-small){
+                .b-text-r {
+                    font-size: 16px;
+                }
+            }
+        }
+    }
+    .login{
+        position: absolute;
+        top: 50%;
+        text-align: center;
+       .log-in {
+            padding: 14px 60px;
+            border-radius: 50px;
+            background-color: $azure-two;
+            text-align: center;
+            color: #fff;
+        }
+        p {
+            margin: 18px 0;
+            color: $cool-grey;
+            margin-top: 32px;
+        }
+        .sign-up {
+            cursor: pointer;
+            color: $azure;
+        }
+    }
+}

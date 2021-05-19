@@ -1,0 +1,19 @@
+// .show{
+//     bottom: 0;
+// }
+.doors-edit {
+    @include flex(space-between, center);
+    margin-top: 100px;
+}
+.door-tags {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    gap: 11px;
+    div {
+       .tag-info{
+            margin-bottom: 13px;
+        }
+    }
+}
