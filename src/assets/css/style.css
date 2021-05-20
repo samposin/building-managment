@@ -3090,6 +3090,10 @@ img {
     background-color: #191919;
     border-radius: 50px;
     padding: 15px 5px 5px 5px;
+    display: none;
+}
+.floor-list-container.show {
+  display: block !important;
 }
 .floor-list-number{
   border-radius: 50%;
