@@ -55,6 +55,8 @@ const Requests = () => {
 
   const [showLockDown, setShowLockDown] = useState(false);
 
+  const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}])
+
   const [pitch, setPitch] = useState(0);
   const [zoom, setZoom] = useState(15);
   const [center, setCenter] = useState([-89.41068, 43.07561]);
@@ -392,14 +394,14 @@ const Requests = () => {
 
   const hideSourcesAndLayers = (mapInstance, floorNotToHide) => {
 
-    var floorArray = ['first-floor', 'second-floor', 'third-floor', 'fourth-floor'];
+
     var leyerVisibility;
-    floorArray.forEach( (floor) => {
+    floorArray.forEach( (obj) => {
       leyerVisibility = 'none'
-      if(floor === floorNotToHide){
+      if(obj.floor === floorNotToHide){
         leyerVisibility = 'visible'
       }
-      if(floor === 'second-floor'){
+      if(obj.floor === 'second-floor'){
           mapInstance.setLayoutProperty("area-layer", "visibility", leyerVisibility);
           mapInstance.setLayoutProperty("hidden-area-layer-outline", "visibility", leyerVisibility);
           mapInstance.setLayoutProperty("hidden-layer-border-hover", "visibility", leyerVisibility);
@@ -408,19 +410,25 @@ const Requests = () => {
           return;
       }
 
-        mapInstance.setLayoutProperty(`${floor}-border-area-layer`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-border-area-layer-outline`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-border-layer-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-border-layer-border-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-mouseover-area-layer`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-mouseover-area-layer-outline`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-mouseover-layer-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-mouseover-layer-border-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${floor}-wall-area-layer-outline`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-border-area-layer`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-border-area-layer-outline`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-border-layer-hover`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-border-layer-border-hover`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-area-layer`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-area-layer-outline`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-layer-hover`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-layer-border-hover`, "visibility", leyerVisibility);
+        mapInstance.setLayoutProperty(`${obj.floor}-wall-area-layer-outline`, "visibility", leyerVisibility);
     });
 
   }
-  const renderSourceAndLayer = (floorClicked) => {
+  const renderSourceAndLayer = (floorClicked, indexNumber) => {
+    let floorArrayUpdated = floorArray.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
+    });
+    setFloorArray(floorArrayUpdated);
     hideSourcesAndLayers(mapObj, floorClicked);
     // if(floorClicked === 'first-floor'){
     //   firstFloorAreaSourceAndLayers(mapObj);
@@ -1247,31 +1255,29 @@ const Requests = () => {
       mapInstance.removeSource("hidden-area-source");
     }
     
-    var floorArray = ['first-floor', 'second-floor', 'third-floor', 'fourth-floor'];
+    floorArray.forEach( (obj) => {
 
-    floorArray.forEach( (floor) => {
-
-      if(floor === 'second-floor'){
+      if(obj.floor === 'second-obj.floor'){
           return;
       }
 
-      if (mapInstance.getSource(`{floor}-border-area-source`)) {
-        mapInstance.removeLayer(`{floor}-border-area-layer`);
-        mapInstance.removeLayer(`{floor}-border-area-layer-outline`);
-        mapInstance.removeLayer(`{floor}-border-layer-hover`);
-        mapInstance.removeLayer(`{floor}-border-layer-border-hover`);
-        mapInstance.removeSource(`{floor}-border-area-source`);
+      if (mapInstance.getSource(`${obj.floor}-border-area-source`)) {
+        mapInstance.removeLayer(`${obj.floor}-border-area-layer`);
+        mapInstance.removeLayer(`${obj.floor}-border-area-layer-outline`);
+        mapInstance.removeLayer(`${obj.floor}-border-layer-hover`);
+        mapInstance.removeLayer(`${obj.floor}-border-layer-border-hover`);
+        mapInstance.removeSource(`${obj.floor}-border-area-source`);
       }
-      if (mapInstance.getSource(`{floor}-mouseover-area-source`)) {
-        mapInstance.removeLayer(`{floor}-mouseover-area-layer`);
-        mapInstance.removeLayer(`{floor}-mouseover-area-layer-outline`);
-        mapInstance.removeLayer(`{floor}-mouseover-layer-hover`);
-        mapInstance.removeLayer(`{floor}-mouseover-layer-border-hover`);
-        mapInstance.removeSource(`{floor}-mouseover-area-source`);
+      if (mapInstance.getSource(`${obj.floor}-mouseover-area-source`)) {
+        mapInstance.removeLayer(`${obj.floor}-mouseover-area-layer`);
+        mapInstance.removeLayer(`${obj.floor}-mouseover-area-layer-outline`);
+        mapInstance.removeLayer(`${obj.floor}-mouseover-layer-hover`);
+        mapInstance.removeLayer(`${obj.floor}-mouseover-layer-border-hover`);
+        mapInstance.removeSource(`${obj.floor}-mouseover-area-source`);
       }
-      if (mapInstance.getSource(`{floor}-wall-area-source`)) {
-        mapInstance.removeLayer(`{floor}-wall-area-layer-outline`);
-        mapInstance.removeSource(`{floor}-wall-area-source`);
+      if (mapInstance.getSource(`${obj.floor}-wall-area-source`)) {
+        mapInstance.removeLayer(`${obj.floor}-wall-area-layer-outline`);
+        mapInstance.removeSource(`${obj.floor}-wall-area-source`);
       }
     });
 
@@ -1626,33 +1632,13 @@ const Requests = () => {
       <div className="floor-list-container text-center" id="floor-list-container">
         <div className="p-2">Floor</div>
         <ul>
-          <li
-            className="floor-list-number"
-            onClick={() => renderSourceAndLayer('first-floor')}
-          >
-            <span>1</span>
-          </li>
-
-          <li
-            className="floor-list-number"
-            onClick={() => renderSourceAndLayer('second-floor')}
-          >
-            <span>2</span>
-          </li>
-
-          <li
-            className="floor-list-number"
-            onClick={() => renderSourceAndLayer('third-floor')}
-          >
-            <span>3</span>
-          </li>
-
-          <li
-            className="floor-list-number"
-            onClick={() => renderSourceAndLayer('fourth-floor')}
-          >
-            <span>4</span>
-          </li>
+          {
+            floorArray.map( (obj, index) => {
+              return <li key={index + 1} className={`floor-list-number ${obj.active && 'active'}`} onClick={() => renderSourceAndLayer(obj.floor, index)}>
+                        <span>{index + 1}</span>
+                     </li>;
+            })
+          }
         </ul>
       </div>
       {user.user_type !== "student" && (

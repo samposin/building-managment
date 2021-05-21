@@ -3111,3 +3111,10 @@ img {
   margin: 3px; */
   cursor: pointer;
 }
+
+.floor-list-number.active {
+  background-color:#17a2b8;
+  border:#178fed solid 1px;
+  border-radius: 50%;
+  cursor: pointer;
+}
