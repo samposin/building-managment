@@ -64,6 +64,11 @@ const Requests = () => {
   const [bearing, setBearing] = useState(0);
   const [viewIn3d, setViewIn3d] = useState(false);
 
+
+  const [showCameraModal, setShowCameraModal] = useState(false);
+
+  const toggleCameraModal = () => setShowCameraModal(!showCameraModal);
+
   const hideSRDM = () => {
     setShowRequestDetailsModal(false);
   };
@@ -137,6 +142,309 @@ const Requests = () => {
     } catch (e) {
       console.error("Error: ", e);
     }
+  };
+
+  const getPulsingDotListSheet = async () => {
+    var SHEET_ID = "0";
+    var doc1 = new GoogleSpreadsheet('1O_NSS9trFypqlxoPxj1C1B601i_Y23bAZ0PRZI6WaiU');
+    try {
+      await doc1.useServiceAccountAuth({
+        client_email: CLIENT_EMAIL,
+        private_key: PRIVATE_KEY,
+      });
+      // loads document properties and worksheets
+      await doc1.loadInfo();
+
+      const sheet = doc1.sheetsById[SHEET_ID];
+      // const result = await sheet.addRow(row);
+
+      const rows = await sheet.getRows();
+      let points = rows.map((obj)=> [obj._rawData[0],obj._rawData[1], obj._rawData[2], obj._rawData[3], obj._rawData[4], obj._rawData[5]] );
+      
+      drawPoints(points);
+
+    } catch (e) {
+      console.error("Error: ", e);
+    }
+  };
+
+  const drawPoints = (points) => {
+    var size = 100;
+
+    for (var i = 0; i < points.length; i++) {
+      if (points[i][4] == "2-Alert") {
+        var devId = points[i][0];
+
+        var pulsingDotdevId = {
+          width: size,
+          height: size,
+          data: new Uint8Array(size * size * 4),
+
+          // get rendering context for the map canvas when layer is added to the map
+          onAdd: function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this.context = canvas.getContext("2d");
+          },
+
+          // called once before every frame where the icon will be used
+          render: function () {
+            var duration = 1000;
+            var t = (performance.now() % duration) / duration;
+
+            var radius = (size / 2) * 0.3;
+            var outerRadius = (size / 2) * 0.7 * t + radius;
+            var context = this.context;
+
+            // draw outer circle
+            context.clearRect(0, 0, this.width, this.height);
+            context.beginPath();
+            context.arc(
+              this.width / 2,
+              this.height / 2,
+              outerRadius,
+              0,
+              Math.PI * 2
+            );
+            context.fillStyle = "rgba(255, 200, 200," + (1 - t) + ")";
+            context.fill();
+
+            // draw inner circle
+            context.beginPath();
+            context.arc(
+              this.width / 2,
+              this.height / 2,
+              radius,
+              0,
+              Math.PI * 2
+            );
+            context.fillStyle = "rgba(255, 100, 100, 1)";
+            context.strokeStyle = "white";
+            context.lineWidth = 2 + 4 * (1 - t);
+            context.fill();
+            context.stroke();
+
+            // update this image's data with data from the canvas
+            this.data = context.getImageData(
+              0,
+              0,
+              this.width,
+              this.height
+            ).data;
+
+            // continuously repaint the map, resulting in the smooth animation of the dot
+            mapObj.triggerRepaint();
+
+            // return `true` to let the map know that the image was updated
+            return true;
+          },
+        };
+      }
+
+      if (points[i][4] == "1-Warning") {
+        var devId = points[i][0];
+
+        var pulsingDotOrangedevId = {
+          width: size,
+          height: size,
+          data: new Uint8Array(size * size * 4),
+
+          // get rendering context for the map canvas when layer is added to the map
+          onAdd: function () {
+            var canvas = document.createElement("canvas");
+            canvas.width = this.width;
+            canvas.height = this.height;
+            this.context = canvas.getContext("2d");
+          },
+
+          // called once before every frame where the icon will be used
+          render: function () {
+            var duration = 1000;
+            var t = (performance.now() % duration) / duration;
+
+            var radius = (size / 2) * 0.3;
+            var outerRadius = (size / 2) * 0.7 * t + radius;
+            var context = this.context;
+
+            // draw outer circle
+            context.clearRect(0, 0, this.width, this.height);
+            context.beginPath();
+            context.arc(
+              this.width / 2,
+              this.height / 2,
+              outerRadius,
+              0,
+              Math.PI * 2
+            );
+            context.fillStyle = "rgba(255, 200, 200," + (1 - t) + ")";
+            context.fill();
+
+            // draw inner circle
+            context.beginPath();
+            context.arc(
+              this.width / 2,
+              this.height / 2,
+              radius,
+              0,
+              Math.PI * 2
+            );
+            context.fillStyle = "orange";
+            context.strokeStyle = "white";
+            context.lineWidth = 2 + 4 * (1 - t);
+            context.fill();
+            context.stroke();
+
+            // update this image's data with data from the canvas
+            this.data = context.getImageData(
+              0,
+              0,
+              this.width,
+              this.height
+            ).data;
+
+            // continuously repaint the map, resulting in the smooth animation of the dot
+            mapObj.triggerRepaint();
+
+            // return `true` to let the map know that the image was updated
+            return true;
+          },
+        };
+      }
+    }
+
+    mapObj.on("load", function () {
+      var redMarkersArray = [];
+      var orangeMarkersArray = [];
+
+      for (i = 0; i < points.length; i++) {
+        if (points[i][4] == "2-Alert") {
+          var devId = points[i][0];
+
+          mapObj.addImage("pulsing-dot" + devId, pulsingDotdevId, {
+            pixelRatio: 2,
+          });
+
+          mapObj.addSource("source-points" + devId, {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [points[i][2], points[i][3]],
+                  },
+                },
+              ],
+            },
+          });
+
+          mapObj.addLayer({
+            id: "layer-points" + devId,
+            type: "symbol",
+            source: "source-points" + devId,
+            layout: {
+              "icon-image": "pulsing-dot" + devId,
+            },
+          });
+
+          redMarkersArray.push({
+            layerID: "layer-points" + devId,
+            deviceID: devId,
+            deviceName: points[i][1],
+            issue: points[i][5],
+            lat: points[i][3],
+            lng: points[i][2],
+            status: points[i][4],
+          });
+        }
+
+        if (points[i][4] == "1-Warning") {
+          var devId = points[i][0];
+
+          mapObj.addImage("orange-pulsing-dot" + devId, pulsingDotOrangedevId, {
+            pixelRatio: 2,
+          });
+
+          mapObj.addSource("source-orange-points" + devId, {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [points[i][2], points[i][3]],
+                  },
+                },
+              ],
+            },
+          });
+
+          mapObj.addLayer({
+            id: "layer-orange-points" + devId,
+            type: "symbol",
+            source: "source-orange-points" + devId,
+            layout: {
+              "icon-image": "orange-pulsing-dot" + devId,
+            },
+          });
+
+          orangeMarkersArray.push({
+            layerID: "layer-orange-points" + devId,
+            deviceID: devId,
+            deviceName: points[i][1],
+            issue: points[i][5],
+            lat: points[i][3],
+            lng: points[i][2],
+            status: points[i][4],
+          });
+        }
+      }
+
+      redMarkersArray.forEach(function (item) {
+        mapObj.on("click", item.layerID, function (e) {
+          alert(item.layerID);
+          // if(e.features[0].layer.id == item.layerID){
+          //     $('#alert_dev_id').text(item.deviceID)
+          //     $('#name').text(item.deviceName)
+          //     $('#issue').text(item.issue)
+
+          //     $('#alert-info').show()
+
+          //     $('#alert_devId').val(item.deviceID)
+          //     $('#alert_devName').val(item.deviceName)
+          //     $('#alert_lat').val(item.lat)
+          //     $('#alert_lng').val(item.lng)
+          //     $('#alert_Status').val(item.status)
+          //     $('#alert_issue').val(item.issue)
+          // }
+        });
+      });
+
+      orangeMarkersArray.forEach(function (item) {
+        mapObj.on("click", item.layerID, function (e) {
+          alert(item.layerID);
+          // if(e.features[0].layer.id == item.layerID){
+          //     $('#alert_dev_id').text(item.deviceID)
+          //     $('#name').text(item.deviceName)
+          //     $('#issue').text(item.issue)
+
+          //     $('#alert-info').show()
+
+          //     $('#alert_devId').val(item.deviceID)
+          //     $('#alert_devName').val(item.deviceName)
+          //     $('#alert_lat').val(item.lat)
+          //     $('#alert_lng').val(item.lng)
+          //     $('#alert_Status').val(item.status)
+          //     $('#alert_issue').val(item.issue)
+          // }
+        });
+      });
+    });
   };
 
   const addApproveOrDenyRequestToSheet = async (request, ApproveOrDeny) => {
@@ -391,70 +699,73 @@ const Requests = () => {
       }
       });
 
-    // When a click event occurs on a feature in the places layer, open a popup at the
-    // location of the feature, with description HTML from its properties.
-    mapInstance.on("click", "places", function (e) {
-      var features = e.features[0];
-      if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
-        mapInstance.removeLayer("selectedBuilding");
-        mapInstance.removeSource("selectedBuilding");
-      }
+    // // When a click event occurs on a feature in the places layer, open a popup at the
+    // // location of the feature, with description HTML from its properties.
+    // mapInstance.on("click", "places", function (e) {
+    //   var features = e.features[0];
+    //   if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
+    //     mapInstance.removeLayer("selectedBuilding");
+    //     mapInstance.removeSource("selectedBuilding");
+    //   }
 
-      mapInstance.addSource("selectedBuilding", {
-        type: "geojson",
-        data: features.toJSON(),
-      });
-      mapInstance.addLayer({
-        id: "selectedBuilding",
-        type: "fill",
-        source: "selectedBuilding",
-        layout: {},
-        paint: {
-          "fill-outline-color": "#1F2C40",
-          "fill-color": "#178fed",
-        },
-      });
+    //   mapInstance.addSource("selectedBuilding", {
+    //     type: "geojson",
+    //     data: features.toJSON(),
+    //   });
+    //   mapInstance.addLayer({
+    //     id: "selectedBuilding",
+    //     type: "fill",
+    //     source: "selectedBuilding",
+    //     layout: {},
+    //     paint: {
+    //       "fill-outline-color": "#1F2C40",
+    //       "fill-color": "#178fed",
+    //     },
+    //   });
 
-      var popup =
-        '<div class="leaflet-popup  leaflet-zoom-animated" ><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 311px;"><div class="content-wrapper clearfix">' +
-        '<div class="popup-row">' +
-        '<div class="popup-col mo-img">' +
-        '<img src="https://map.wisc.edu/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBckFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--352c73a8c42905f2c6e0148f641c94f1e84e9dc1/Muir_Woods.jpg" alt="" data-modal-link="/api/v1/map_objects/552.html" class="thumbnail">' +
-        "</div>" +
-        '<div class="popup-col">' +
-        "<h3>" +
-        e.features[0].properties.name +
-        "</h3><p></p></div></div>" +
-        '<p class="align-right">' +
-        '<a href="#" data-modal-link="/api/v1/map_objects/552.html" class="more_link" tabindex="1">' +
-        "More " +
-        '<svg aria-hidden="true" id="uw-symbol-more" viewBox="0,0,1792,1792">' +
-        "<title>More</title>" +
-        '<path d="M979 960q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23zm384 0q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23z"></path>' +
-        "</svg>" +
-        "</a>" +
-        "</p>" +
-        '</div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>';
-      new mapboxgl.Popup()
-        .setLngLat(e.lngLat)
-        .setHTML(popup)
-        .addTo(mapInstance);
+    //   var popup =
+    //     '<div class="leaflet-popup  leaflet-zoom-animated" ><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 311px;"><div class="content-wrapper clearfix">' +
+    //     '<div class="popup-row">' +
+    //     '<div class="popup-col mo-img">' +
+    //     '<img src="https://map.wisc.edu/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBckFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--352c73a8c42905f2c6e0148f641c94f1e84e9dc1/Muir_Woods.jpg" alt="" data-modal-link="/api/v1/map_objects/552.html" class="thumbnail">' +
+    //     "</div>" +
+    //     '<div class="popup-col">' +
+    //     "<h3>" +
+    //     e.features[0].properties.name +
+    //     "</h3><p></p></div></div>" +
+    //     '<p class="align-right">' +
+    //     '<a href="#" data-modal-link="/api/v1/map_objects/552.html" class="more_link" tabindex="1">' +
+    //     "More " +
+    //     '<svg aria-hidden="true" id="uw-symbol-more" viewBox="0,0,1792,1792">' +
+    //     "<title>More</title>" +
+    //     '<path d="M979 960q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23zm384 0q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23z"></path>' +
+    //     "</svg>" +
+    //     "</a>" +
+    //     "</p>" +
+    //     '</div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>';
+    //   new mapboxgl.Popup()
+    //     .setLngLat(e.lngLat)
+    //     .setHTML(popup)
+    //     .addTo(mapInstance);
 
-      // Change the cursor to a pointer when the mouse is over the places layer.
-      mapInstance.on("mouseenter", "places", function () {
-        mapInstance.getCanvas().style.cursor = "pointer";
-      });
+    //   // Change the cursor to a pointer when the mouse is over the places layer.
+    //   mapInstance.on("mouseenter", "places", function () {
+    //     mapInstance.getCanvas().style.cursor = "pointer";
+    //   });
 
-      // Change it back to a pointer when it leaves.
-      mapInstance.on("mouseleave", "places", function () {
-        mapInstance.getCanvas().style.cursor = "";
-      });
-    });
+    //   // Change it back to a pointer when it leaves.
+    //   mapInstance.on("mouseleave", "places", function () {
+    //     mapInstance.getCanvas().style.cursor = "";
+    //   });
+    // });
   };
 
   const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
 
     var leyerVisibility;
+
+    if(!mapInstance.getSource("first-floor-border-area-source")) return;
+
     floorArray.forEach( (obj, index) => {
       leyerVisibility = 'none'
       if(obj.floor === floorNotToHide){
@@ -484,7 +795,7 @@ const Requests = () => {
   }
 
   const hideAndShowPlacesSourcesAndLayers = (mapInstance, leyerVisibility) => {
-
+    if(!mapInstance.getSource("places")) return;
       mapInstance.setLayoutProperty("places", "visibility", leyerVisibility);
       // mapInstance.setLayoutProperty("building-labels", "visibility", leyerVisibility);
   }
@@ -1472,9 +1783,58 @@ const Requests = () => {
     });
   };
 
+  const loadDoorAnimatedMarkerSourcesAndLayers = () => {
+    mapObj.loadImage(
+      "./white-marker.png",
+      function (error, image) {
+        if (error) throw error;
+
+        // Add the image to the map style.
+        mapObj.addImage("animated-dot", image);
+
+        mapObj.addSource("exit-devices-source", {
+          type: "vector",
+          url: "mapbox://alexmahnke.ckp4p0nbk00k327nksb3c4ukm-4shxo",
+        });
+  
+        mapObj.addLayer({
+          id: 'exit-devices-layer',
+          type: 'symbol',
+          source: 'exit-devices-source',
+          "source-layer": "Devices",
+          "minzoom": 17,
+          "maxzoom": 19,
+          layout: {
+            "icon-image": "animated-dot", // reference the image
+            "icon-size": 0.020,
+          }
+        });
+
+        mapObj.addSource("room-devices-source", {
+          type: "vector",
+          url: "mapbox://alexmahnke.aoanit2m",
+        });
+  
+        mapObj.addLayer({
+          id: 'room-devices-layer',
+          type: 'symbol',
+          source: 'room-devices-source',
+          "source-layer": "Room_Number-5rzz4j",
+          "minzoom": 18.5,
+          // "maxzoom": 19,
+          layout: {
+            "icon-image": "animated-dot", // reference the image
+            "icon-size": 0.010,
+          }
+        });
+      }
+    );
+  }
+
   useEffect(() => {
     getRequestListSheet();
     getBuildingList();
+    getPulsingDotListSheet();
 
     mapboxgl.accessToken =
       "pk.eyJ1IjoiYWxleG1haG5rZSIsImEiOiJja25oc3psc2cwbWd2MnZudzA1d2dpOW5wIn0.w7LO2v86HxcaZUPdkmFk7g";
@@ -1492,7 +1852,7 @@ const Requests = () => {
 
     map.on("load", function () {
       loadGeoJsonPlacesSourcesAndLayers(map);
-    });
+      loadDoorAnimatedMarkerSourcesAndLayers();
     map.on("zoom", function () {
       var currentZoom = map.getZoom();
 
@@ -1533,7 +1893,8 @@ const Requests = () => {
         loadGeoJsonPlacesSourcesAndLayers(map);
       }
     });
-
+    
+  });
     // new code start
 
     // parameters to ensure the model is georeferenced correctly on the map
@@ -1660,6 +2021,54 @@ const Requests = () => {
     //  new code end here ...
   }, [center]);
 
+  const toggleCameraView = () => {
+
+      if(showCameraModal){
+        
+        mapObj.flyTo({
+          center: [-89.4086392511042,  43.07144355430859],
+          zoom: 14
+        });
+        document.querySelectorAll(".add-camera-spot").forEach(el => el.remove());
+        toggleCameraModal();
+      }else{
+      // create a HTML element for each feature
+      var camera = document.createElement('div');
+      camera.className = 'add-camera-spot';
+
+      // make a marker for each feature and add to the map
+      var marker = new mapboxgl.Marker({
+          element: camera,
+      }).setLngLat([-89.35555374175941, 43.10847137790425])
+          .addTo(mapObj);
+      
+      marker.getElement().addEventListener('click', () => {
+          setShowCameraModal(true);
+      });
+
+      mapObj.flyTo({
+          center: [-89.35555374175941, 43.10847137790425],
+          zoom: 17
+      });
+    }
+  }
+
+  const cameraModal = () => {
+      return <>  
+        <Modal show={showCameraModal} onHide={toggleCameraView} className="mt-5">
+          <Modal.Header closeButton>
+            {/* <Modal.Title>Modal heading</Modal.Title> */}
+          </Modal.Header>
+          <Modal.Body>
+          <video className="w-100 h-auto mb-5" autoplay muted>
+              <source src="https://f5.aos.wisc.edu/webcam_movies/latest_northwest_today_1024x768.mp4 " type="video/mp4" />
+              Your browser does not support the video tag.
+          </video>
+          </Modal.Body>
+        </Modal>
+      </>
+  }
+
   return (
     <>
       {prDisplay === true && (
@@ -1737,7 +2146,7 @@ const Requests = () => {
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
-                    onClick={() => alert("under development")}
+                    onClick={() => toggleCameraView()}
                   >
                     <i className="fas fa-video"></i>
                   </button>
@@ -1820,6 +2229,7 @@ const Requests = () => {
       )}
       {/* Modal */}
       {lockDownModal()}
+      { cameraModal() }
       {lockDownInAnyBuilding === true && (
         <h1 className="emergency">EMERGENCY ALERT: BUILDINGS IN LOCKDOWN</h1>
       )}

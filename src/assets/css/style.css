@@ -3118,3 +3118,11 @@ img {
   border-radius: 50%;
   cursor: pointer;
 }
+
+.add-camera-spot {
+  background-image: url('../icons/Video-POI-Icon.svg');
+  background-size: cover;
+  width: 63px;
+  height: 63px;
+  cursor: pointer;
+}

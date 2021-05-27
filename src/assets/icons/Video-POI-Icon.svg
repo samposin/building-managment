@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="55" height="55" viewBox="0 0 55 55">
+  <g id="Group_65" data-name="Group 65" transform="translate(-771 -464)">
+    <g id="Rectangle_122" data-name="Rectangle 122" transform="translate(771 464)" fill="#191919" stroke="#e4e6ea" stroke-width="2">
+      <rect width="55" height="55" rx="27.5" stroke="none"/>
+      <rect x="1" y="1" width="53" height="53" rx="26.5" fill="none"/>
+    </g>
+    <g id="video" transform="translate(785.5 478.864)">
+      <path id="Path_137" data-name="Path 137" d="M23.636,7,16,12.455l7.636,5.455Z" transform="translate(1.364 0.182)" fill="#fff" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+      <rect id="Rectangle_121" data-name="Rectangle 121" width="16.364" height="15.273" rx="2" transform="translate(1 5)" fill="#fff" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/>
+    </g>
+  </g>
+</svg>
