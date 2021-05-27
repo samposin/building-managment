@@ -19,6 +19,7 @@ var buildingsRows;
 var buildingsRowsArray = [];
 var lockDownInAnyBuilding = false;
 var mapObj;
+var buildingNames = [];
 var user = localStorage.getItem("userInfo");
 user = JSON.parse(user);
 
@@ -87,11 +88,13 @@ const Requests = () => {
 
       const rows = (buildingsRows = await sheet.getRows()); // can pass in { limit, offset }
       //   buildings = rows;
+      buildingNames = [];
       let buildingRows1 = rows.map((obj) => {
         const { name, desc, lock_down, _rowNumber } = obj;
 
         if (lock_down.toString() === "TRUE") {
           lockDownInAnyBuilding = true;
+          buildingNames.push(name);
         }
 
         return {
@@ -106,6 +109,11 @@ const Requests = () => {
       console.error("Error: ", e);
     }
   };
+
+    // change buildings color incase of lockdown
+    useEffect(() => {
+      if (mapObj) applyRedColor();
+    }, [buildingsList]);
 
   const getRequestListSheet = async () => {
     var SHEET_ID = "1723216762";
@@ -227,6 +235,40 @@ const Requests = () => {
     setBuildingsList(updatebuildingList);
   };
 
+  // change buildings color incase of lockdown
+  const applyRedColor = () => {
+    var lockdownBuildings = [];
+    var features = mapObj.queryRenderedFeatures({ layers: ['places'] });
+
+    features.forEach((fe) => {
+      if (buildingNames.includes(fe.properties.name)) {
+        lockdownBuildings.push(fe);
+      }
+    });
+    if (typeof mapObj.getLayer('lockdownBuildings') !== 'undefined') {
+      mapObj.removeLayer('lockdownBuildings');
+      mapObj.removeSource('lockdownBuildings');
+    }
+
+    mapObj.addSource('lockdownBuildings', {
+      type: 'geojson',
+      data: {
+        type: 'FeatureCollection',
+        features: lockdownBuildings,
+      },
+    });
+    mapObj.addLayer({
+      id: 'lockdownBuildings',
+      type: 'fill',
+      source: 'lockdownBuildings',
+      layout: {},
+      paint: {
+        'fill-outline-color': '#1F2C40',
+        'fill-color': '#ff0000',
+      },
+    });
+  };
+
   const updateBuildingRows = async () => {
     var __rowNumber, __checked;
     for (let index = 0; index < buildingsRowsArray.length; index++) {
@@ -245,6 +287,7 @@ const Requests = () => {
         lockDownInAnyBuilding = true;
       }
     });
+    applyRedColor();
     setShowLockDown(false);
   };
   const lockDownModal = () => {
@@ -314,32 +357,49 @@ const Requests = () => {
   const loadGeoJsonPlacesSourcesAndLayers = (mapInstance) => {
     if (mapInstance.getSource("places")) return;
     mapInstance.addSource("places", {
-      type: "geojson",
-      data: buildings,
+      type: "vector",
+      url: "mapbox://alexmahnke.0ywvbtoi",
     });
     // Add a layer showing the places.
     mapInstance.addLayer({
-      id: "places",
-      type: "fill",
-      source: "places",
-      layout: {},
-      paint: {
+      "id": "places",
+      "type": "fill",
+      "source": "places",
+      "source-layer": "all_buildings-27vwin",
+      "layout": {},
+      "paint": {
         "fill-color": "#1F2C40", // blue color fill
         "fill-outline-color": "#1daefc",
       },
     });
 
+    mapInstance.addLayer({
+      'id': 'building-labels',
+      'type': 'symbol',
+      'source': 'places',
+      "source-layer": "all_buildings-27vwin",
+      "minzoom": 16,
+      'layout': {
+      'text-field': ['get', 'name'],
+      'text-variable-anchor': ['top', 'bottom', 'left', 'right'],
+      'text-radial-offset': 0.5,
+      'text-justify': 'auto',
+      "text-size": 10
+      },
+      paint: {
+        "text-color": "#ffffff"
+      }
+      });
+
     // When a click event occurs on a feature in the places layer, open a popup at the
     // location of the feature, with description HTML from its properties.
     mapInstance.on("click", "places", function (e) {
       var features = e.features[0];
-      console.log(features.length);
       if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
         mapInstance.removeLayer("selectedBuilding");
         mapInstance.removeSource("selectedBuilding");
       }
 
-      console.log(features.toJSON());
       mapInstance.addSource("selectedBuilding", {
         type: "geojson",
         data: features.toJSON(),
@@ -392,21 +452,21 @@ const Requests = () => {
     });
   };
 
-  const hideSourcesAndLayers = (mapInstance, floorNotToHide) => {
-
+  const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
 
     var leyerVisibility;
-    floorArray.forEach( (obj) => {
+    floorArray.forEach( (obj, index) => {
       leyerVisibility = 'none'
       if(obj.floor === floorNotToHide){
         leyerVisibility = 'visible'
       }
+
+      mapInstance.setLayoutProperty(`${index+1}-overlay`, "visibility", leyerVisibility);
       if(obj.floor === 'second-floor'){
           mapInstance.setLayoutProperty("area-layer", "visibility", leyerVisibility);
           mapInstance.setLayoutProperty("hidden-area-layer-outline", "visibility", leyerVisibility);
           mapInstance.setLayoutProperty("hidden-layer-border-hover", "visibility", leyerVisibility);
           mapInstance.setLayoutProperty("hidden-layer-hover", "visibility", leyerVisibility);
-          mapInstance.setLayoutProperty("overlay", "visibility", leyerVisibility);
           return;
       }
 
@@ -422,6 +482,13 @@ const Requests = () => {
     });
 
   }
+
+  const hideAndShowPlacesSourcesAndLayers = (mapInstance, leyerVisibility) => {
+
+      mapInstance.setLayoutProperty("places", "visibility", leyerVisibility);
+      // mapInstance.setLayoutProperty("building-labels", "visibility", leyerVisibility);
+  }
+
   const renderSourceAndLayer = (floorClicked, indexNumber) => {
     let floorArrayUpdated = floorArray.map((obj, index) => {
         if(index === indexNumber)
@@ -429,7 +496,7 @@ const Requests = () => {
         return { ...obj, active: false}
     });
     setFloorArray(floorArrayUpdated);
-    hideSourcesAndLayers(mapObj, floorClicked);
+    hideFloorSourcesAndLayers(mapObj, floorClicked);
     // if(floorClicked === 'first-floor'){
     //   firstFloorAreaSourceAndLayers(mapObj);
     // }
@@ -1238,13 +1305,14 @@ const Requests = () => {
       ]);
     });
   };
-
+  //to delete
   const removeAllSourcesAndLayers = (mapInstance) => {
     
     removeAllFloorsSourcesAndLayers(mapInstance);
     removePlacesSourceAndLeyers(mapInstance);
   };
 
+  //to delete
   const removeAllFloorsSourcesAndLayers = (mapInstance) => {
     
     if (mapInstance.getSource("hidden-area-source")) {
@@ -1281,15 +1349,17 @@ const Requests = () => {
       }
     });
 
-    if (mapInstance.getSource("myImageSource")) {
+    if (mapInstance.getSource("sfRasterImage")) {
       mapInstance.removeLayer("overlay");
-      mapInstance.removeSource("myImageSource");
+      mapInstance.removeSource("sfRasterImage");
     }
   }
 
+  //to delete
   const removePlacesSourceAndLeyers = (mapInstance) => {
     if (mapInstance.getSource("places")) {
       mapInstance.removeLayer("places");
+      mapInstance.removeLayer("building-labels");      
       mapInstance.removeSource("places");
     }
   }
@@ -1308,10 +1378,10 @@ const Requests = () => {
       setBearing(0);
     }
   };
-  const addRasterImageSourceAndLayer = (mapInstance) => {
-    if (mapInstance.getSource("myImageSource")) return;
+  const addRasterImageSourceAndLayerSecondFloor = (mapInstance) => {
+    if (mapInstance.getSource("sfRasterImage")) return;
 
-    mapInstance.addSource("myImageSource", {
+    mapInstance.addSource("sfRasterImage", {
       type: "image",
       url: `../raster-image/Layout.png`,
       coordinates: [
@@ -1322,8 +1392,79 @@ const Requests = () => {
       ],
     });
     mapInstance.addLayer({
-      id: "overlay",
-      source: "myImageSource",
+      id: "2-overlay",
+      source: "sfRasterImage",
+      type: "raster",
+      // paint: {
+      //   'raster-opacity': 0.85,
+      // },
+    });
+  };
+
+  const addRasterImageSourceAndLayerThirdFloor = (mapInstance) => {
+    if (mapInstance.getSource("third-floor-RasterImage")) return;
+
+    mapInstance.addSource("third-floor-RasterImage", {
+      type: "image",
+      url: `../raster-image/3.png`,
+      coordinates: [
+        [-89.40830000000, 43.071700],
+        [-89.40890000000, 43.071200],
+        [-89.40830000000, 43.07120000000],
+        [-89.40890000000, 43.07170000000],
+      ],
+    });
+    mapInstance.addLayer({
+      id: "3-overlay",
+      source: "third-floor-RasterImage",
+      type: "raster",
+      // paint: {
+      //   'raster-opacity': 0.85,
+      // },
+    });
+  };
+  
+  const addRasterImageSourceAndLayerFourthFloor = (mapInstance) => {
+    if (mapInstance.getSource("fourth-floor-RasterImage")) return;
+
+    mapInstance.addSource("fourth-floor-RasterImage", {
+      type: "image",
+      url: `../raster-image/4.png`,
+      coordinates: [
+        [-89.40830000000, 43.07170000000],
+        [-89.40890000000, 43.07120000000],
+        [-89.40830000000, 43.07120000000],
+        [-89.40890000000, 43.07170000000],
+      ],
+    });
+
+    mapInstance.addLayer({
+      id: "4-overlay",
+      source: "fourth-floor-RasterImage",
+      type: "raster",
+      // paint: {
+      //   'raster-opacity': 0.85,
+      // },
+    });
+  };
+
+  const addRasterImageSourceAndLayerFirstFloor = (mapInstance) => {
+    if (mapInstance.getSource("first-floor-RasterImage")) return;
+
+    mapInstance.addSource("first-floor-RasterImage", {
+      type: "image",
+      url: `../raster-image/1.png`,
+      coordinates: [
+        [-89.408100, 43.071900],
+        [-89.408900, 43.071900],
+        [-89.408900, 43.071000],
+        [-89.408100, 43.071000],
+      ],
+    });
+
+    mapInstance.addLayer({
+      id: "1-overlay",
+      source: "first-floor-RasterImage",
       type: "raster",
       // paint: {
       //   'raster-opacity': 0.85,
@@ -1354,13 +1495,22 @@ const Requests = () => {
     });
     map.on("zoom", function () {
       var currentZoom = map.getZoom();
+
       if (currentZoom >= 18) {
-        // removeAllSourcesAndLayers(map);
-        removePlacesSourceAndLeyers(map);
+
+        // removePlacesSourceAndLeyers(map);
+        hideAndShowPlacesSourcesAndLayers(map, 'visible');
+        
+        addRasterImageSourceAndLayerFirstFloor(map);
         firstFloorAreaSourceAndLayers(map);
+
+        addRasterImageSourceAndLayerThirdFloor(map);
         thirdFloorAreaSourceAndLayers(map);
+
+        addRasterImageSourceAndLayerFourthFloor(map);
         fourthFloorAreaSourceAndLayers(map);
-        addRasterImageSourceAndLayer(map);
+
+        addRasterImageSourceAndLayerSecondFloor(map);
         hiddenAreaSourceAndLayers(map);
         renderSourceAndLayer('second-floor');
         var flc_el = document.getElementById("floor-list-container");
@@ -1373,11 +1523,13 @@ const Requests = () => {
       if (currentZoom < 18) {
         var flc_el = document.getElementById("floor-list-container");
         if (flc_el) {
+          console.log(flc_el.classList.contains("show"))
           if (!flc_el.classList.contains("show")) {
             flc_el.classList.remove("show");
           }
         }
-        removeAllFloorsSourcesAndLayers(map);
+        // removeAllFloorsSourcesAndLayers(map);
+        hideFloorSourcesAndLayers(map, 'hide-all')
         loadGeoJsonPlacesSourcesAndLayers(map);
       }
     });
