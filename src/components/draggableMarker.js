@@ -1,9 +1,9 @@
 import mapboxgl from 'mapbox-gl';
 import React, {useEffect} from 'react';
 
-const DraggableMarker = () => {
+const DraggableMarker = (props) => {
     var myRef = React.createRef();
-   
+    
     useEffect(() => {
         var coordinates = myRef.current;
         mapboxgl.accessToken = 'pk.eyJ1IjoiYWxleG1haG5rZSIsImEiOiJja25oc3psc2cwbWd2MnZudzA1d2dpOW5wIn0.w7LO2v86HxcaZUPdkmFk7g';
@@ -14,16 +14,17 @@ const DraggableMarker = () => {
             zoom: 18
         });
     
-        var marker = new mapboxgl.Marker({
-            draggable: true
-        })
-            .setLngLat([-89.40864500185694, 43.071436442382236])
-            .addTo(map);
+            var marker = new mapboxgl.Marker({
+                draggable: true
+            })
+                .setLngLat([-89.40864500185694, 43.071436442382236])
+                .addTo(map);
             function onDragEnd() {
                     var lngLat = marker.getLngLat();
                     coordinates.style.display = 'block';
                     coordinates.innerHTML =
                         'Longitude: ' + lngLat.lng + '<br />Latitude: ' + lngLat.lat;
+                        props.getLatLng(lngLat.lat, lngLat.lng);
             }
             marker.on('dragend', onDragEnd);
 
@@ -31,7 +32,7 @@ const DraggableMarker = () => {
         
     return (
         <>
-            <div id="map" style={{width:"249px",height:"363px"}}></div>
+            <div id="map" style={{width:"100%",height:"300px", borderRadius: '42px'}}></div>
             {/* <img src={WendtFloor} alt="" id="map"/> */}
             <pre ref ={myRef} id="coordinates" className="coordinates" ></pre>
         </>

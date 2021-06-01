@@ -1712,6 +1712,61 @@ const Requests = () => {
     });
   };
 
+  const laod3dBuildings = (map) => {
+    if(map.getLayer("add-3d-buildings")) return;
+        // Insert the layer beneath any symbol layer.
+        var layers = map.getStyle().layers;
+        var labelLayerId;
+        for (var i = 0; i < layers.length; i++) {
+          if (layers[i].type === "symbol" && layers[i].layout["text-field"]) {
+            labelLayerId = layers[i].id;
+            break;
+          }
+        }
+  
+        // The 'building' layer in the Mapbox Streets
+        // vector tileset contains building height data
+        // from OpenStreetMap.
+        map.addLayer(
+          {
+            id: "add-3d-buildings",
+            source: "composite",
+            "source-layer": "building",
+            filter: ["==", "extrude", "true"],
+            type: "fill-extrusion",
+            // minzoom: 15,
+            paint: {
+              "fill-extrusion-color": "#aaa",
+  
+              // Use an 'interpolate' expression to
+              // add a smooth transition effect to
+              // the buildings as the user zooms in.
+              "fill-extrusion-height": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0,
+                15.05,
+                ["get", "height"],
+              ],
+              "fill-extrusion-base": [
+                "interpolate",
+                ["linear"],
+                ["zoom"],
+                15,
+                0,
+                15.05,
+                ["get", "min_height"],
+              ],
+              "fill-extrusion-opacity": 1,
+            },
+          },
+  
+          labelLayerId
+        );
+  }
+
   const addRasterImageSourceAndLayerThirdFloor = (mapInstance) => {
     if (mapInstance.getSource("third-floor-RasterImage")) return;
 
@@ -1784,51 +1839,52 @@ const Requests = () => {
   };
 
   const loadDoorAnimatedMarkerSourcesAndLayers = () => {
-    mapObj.loadImage(
-      "./white-marker.png",
-      function (error, image) {
+
+    const images =[
+      {url: './24x24.png', id: 'image_1'},
+      {url: './42x42.png', id: 'image_2'}
+    ];
+    images.map(img => {
+      mapObj.loadImage(img.url, function (error, res) {
         if (error) throw error;
+          mapObj.addImage(img.id, res)
+      })
+    });
+      mapObj.addSource("exit-devices-source", {
+        type: "vector",
+        url: "mapbox://alexmahnke.ckp4p0nbk00k327nksb3c4ukm-4shxo",
+      });
 
-        // Add the image to the map style.
-        mapObj.addImage("animated-dot", image);
+      mapObj.addLayer({
+        id: 'exit-devices-layer',
+        type: 'symbol',
+        source: 'exit-devices-source',
+        "source-layer": "Devices",
+        "minzoom": 17,
+        "maxzoom": 19,
+        layout: {
+          "icon-image": `${images[1].id}`, // reference the image
+          "icon-size": 0.50,
+        }
+      });
 
-        mapObj.addSource("exit-devices-source", {
-          type: "vector",
-          url: "mapbox://alexmahnke.ckp4p0nbk00k327nksb3c4ukm-4shxo",
-        });
-  
-        mapObj.addLayer({
-          id: 'exit-devices-layer',
-          type: 'symbol',
-          source: 'exit-devices-source',
-          "source-layer": "Devices",
-          "minzoom": 17,
-          "maxzoom": 19,
-          layout: {
-            "icon-image": "animated-dot", // reference the image
-            "icon-size": 0.020,
-          }
-        });
+      mapObj.addSource("room-devices-source", {
+        type: "vector",
+        url: "mapbox://alexmahnke.aoanit2m",
+      });
 
-        mapObj.addSource("room-devices-source", {
-          type: "vector",
-          url: "mapbox://alexmahnke.aoanit2m",
-        });
-  
-        mapObj.addLayer({
-          id: 'room-devices-layer',
-          type: 'symbol',
-          source: 'room-devices-source',
-          "source-layer": "Room_Number-5rzz4j",
-          "minzoom": 18.5,
-          // "maxzoom": 19,
-          layout: {
-            "icon-image": "animated-dot", // reference the image
-            "icon-size": 0.010,
-          }
-        });
-      }
-    );
+      mapObj.addLayer({
+        id: 'room-devices-layer',
+        type: 'symbol',
+        source: 'room-devices-source',
+        "source-layer": "Room_Number-5rzz4j",
+        "minzoom": 18.5,
+        // "maxzoom": 19,
+        layout: {
+          "icon-image": `${images[0].id}`, // reference the image
+          "icon-size": 0.50,
+        }
+      });
   }
 
   useEffect(() => {
@@ -1853,48 +1909,47 @@ const Requests = () => {
     map.on("load", function () {
       loadGeoJsonPlacesSourcesAndLayers(map);
       loadDoorAnimatedMarkerSourcesAndLayers();
-    map.on("zoom", function () {
-      var currentZoom = map.getZoom();
+      map.on("zoom", function () {
+        var currentZoom = map.getZoom();
 
-      if (currentZoom >= 18) {
+        if (currentZoom >= 18) {
+          // removePlacesSourceAndLeyers(map);
+          hideAndShowPlacesSourcesAndLayers(map, "visible");
 
-        // removePlacesSourceAndLeyers(map);
-        hideAndShowPlacesSourcesAndLayers(map, 'visible');
-        
-        addRasterImageSourceAndLayerFirstFloor(map);
-        firstFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerFirstFloor(map);
+          firstFloorAreaSourceAndLayers(map);
 
-        addRasterImageSourceAndLayerThirdFloor(map);
-        thirdFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerThirdFloor(map);
+          thirdFloorAreaSourceAndLayers(map);
 
-        addRasterImageSourceAndLayerFourthFloor(map);
-        fourthFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerFourthFloor(map);
+          fourthFloorAreaSourceAndLayers(map);
 
-        addRasterImageSourceAndLayerSecondFloor(map);
-        hiddenAreaSourceAndLayers(map);
-        renderSourceAndLayer('second-floor');
-        var flc_el = document.getElementById("floor-list-container");
-        if (flc_el) {
-          if (!flc_el.classList.contains("show")) {
-            flc_el.classList.add("show");
+          addRasterImageSourceAndLayerSecondFloor(map);
+          hiddenAreaSourceAndLayers(map);
+          renderSourceAndLayer("second-floor");
+          var flc_el = document.getElementById("floor-list-container");
+          if (flc_el) {
+            if (!flc_el.classList.contains("show")) {
+              flc_el.classList.add("show");
+            }
           }
         }
-      }
-      if (currentZoom < 18) {
-        var flc_el = document.getElementById("floor-list-container");
-        if (flc_el) {
-          console.log(flc_el.classList.contains("show"))
-          if (!flc_el.classList.contains("show")) {
-            flc_el.classList.remove("show");
+        if (currentZoom < 18) {
+          var flc_el = document.getElementById("floor-list-container");
+          if (flc_el) {
+            console.log(flc_el.classList.contains("show"));
+            if (!flc_el.classList.contains("show")) {
+              flc_el.classList.remove("show");
+            }
           }
+          // removeAllFloorsSourcesAndLayers(map);
+          hideFloorSourcesAndLayers(map, "hide-all");
+          loadGeoJsonPlacesSourcesAndLayers(map);
         }
-        // removeAllFloorsSourcesAndLayers(map);
-        hideFloorSourcesAndLayers(map, 'hide-all')
-        loadGeoJsonPlacesSourcesAndLayers(map);
-      }
+      });
+      laod3dBuildings(map);
     });
-    
-  });
     // new code start
 
     // parameters to ensure the model is georeferenced correctly on the map
