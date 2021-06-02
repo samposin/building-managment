@@ -28,7 +28,7 @@ const DraggableMarker = (props) => {
             }
             marker.on('dragend', onDragEnd);
 
-        })
+        }, []);
         
     return (
         <>

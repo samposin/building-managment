@@ -1957,14 +1957,14 @@ label {
   font-weight: bolder;
 }
 
-#slide-in-request-penel {
+.slide-from-left {
   /* height: 150px; */
   width: 300px;
   margin-left: -400px;
   transition: all .75s ease;
 }
 
-#slide-in-request-penel.show {
+.slide-from-left.show {
   opacity: 1;
   width: 300px;
   margin-left: 20px;
@@ -2661,6 +2661,48 @@ p .light {
   top: 70px
 }
 
+.left-panel-slide-in {
+  position: absolute;
+  left: -500px;
+  z-index: 9999;
+  background-color: #5b5b5b;
+  top: 70px;
+  width: 280px;
+  max-width: 300px;
+  min-width: 270px;
+  height: 85vh;
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 40px;
+  padding: 20px 10px;
+  overflow-y: auto;
+  transition: all .75s ease;
+  overflow-x: hidden;
+}
+.custom-group {
+  width: 100%;
+}
+.custom-group label {
+  font-size: 16px;
+}
+.custom-group input {
+  height: 25px;
+  border-radius: 64px;
+  border: solid 1px #b1b3b7;
+  padding: 8px 16px;
+  min-width: 220px;
+}
+.left-panel-slide-in.show {
+  /* opacity: 1; */
+  left: 30px;
+  top: 70px
+}
+.building-text{
+  font-size: 20px;
+}
+.radio-small label {
+  font-size: 16px!important;
+}
+
 ::-webkit-scrollbar {
   -webkit-appearance: none;
   width: 7px;
@@ -2678,6 +2720,10 @@ p .light {
 }
 
 .btn-outline-primary {
+  border-radius: 50px;
+  border-width: 2px;
+}
+.btn-outline-success {
   border-radius: 50px;
   border-width: 2px;
 }
@@ -3125,4 +3171,7 @@ img {
   width: 63px;
   height: 63px;
   cursor: pointer;
+}
+.text-18 {
+  font-size: 18px;
 }

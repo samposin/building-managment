@@ -66,10 +66,7 @@ export default function AddDoor (props) {
               ...values,
               [name]: value
             }); 
-            setTimeout(() => {
-                console.log(values);
-            }, 1000);
-          }
+        }
 
         const addLockDevice = async () => {
             var SHEET_ID = "0";
@@ -98,7 +95,7 @@ export default function AddDoor (props) {
             <div className="modal-g">
                 <h3 className="h3">Add Door</h3>
                 <div className="desc">
-                    <form className="form" >
+                    <form className="form" autocomplete="off" >
                         <div className="input-details">   
                             <div className="inputs">
                                 <div className="group-input">

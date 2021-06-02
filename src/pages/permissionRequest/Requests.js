@@ -6,6 +6,7 @@ import AccessRequestModal from "../../pages/permissionRequest/AccessRequestModal
 import RequestDetailsModal from "./RequestDetailsModal";
 import Modal from "react-bootstrap/Modal";
 import { useToasts } from "react-toast-notifications";
+import InputRadio from '../../components/input_radio';
 
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import config from "../../config";
@@ -64,6 +65,21 @@ const Requests = () => {
   const [bearing, setBearing] = useState(0);
   const [viewIn3d, setViewIn3d] = useState(false);
 
+  const [selectedType, setSelectedType] = useState("Interior Private");
+  const [deviceType, setDeviceType] = useState("");
+  const [values, setValues] = useState({});
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setValues({
+      ...values,
+      [name]: value
+    });
+  }
+
+  const onValueChange= (event) => {
+      setSelectedType(event.target.value)
+  }
 
   const [showCameraModal, setShowCameraModal] = useState(false);
 
@@ -1885,6 +1901,54 @@ const Requests = () => {
           "icon-size": 0.50,
         }
       });
+      mapObj.on("click", "room-devices-layer", function (e) {
+
+        var features = e.features[0];
+        var props = features.properties;
+        var coordinates = features.geometry.coordinates;
+        setValues({ ...values, room_number: props.Name })
+        var flc_el = document.getElementById("door-status-panel");
+        flc_el.classList.add("show");
+        // if (flc_el) {
+        //   console.log(flc_el.classList.contains("show"))
+        //   if (!flc_el.classList.contains("show")) {
+        //     flc_el.classList.remove("show");
+        //   }
+        // }
+        // var el = document.getElementById("door-status-panel");
+        // if (el) el.classList.toggle("show");
+        console.log(props)
+      });
+  }
+
+  const loadUniversityGroundSourceAndLayer = (mapInstance) => {
+    mapInstance.addSource("ug-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.0foqppfl",
+    });
+
+    // mapInstance.addLayer({
+    //   "id": "ug-layer",
+    //   "type": "fill",
+    //   "source": "ug-source",
+    //   "source-layer": "University-Grounds-6adfp9",
+    //   "layout": {},
+    //   "paint": {
+    //     "fill-color": "#1daefc", // blue color fill
+    //     "fill-outline-color": "#1daefc",
+    //     "fill-opacity": 0.5
+    //   },
+    // });
+    mapInstance.addLayer({
+      id: "ug-layer-outline",
+      type: "line",
+      source: "ug-source",
+      "source-layer": "University-Grounds-6adfp9",
+      paint: {
+        "line-color": "#1daefc",
+        "line-width": 2,
+      },
+    });
   }
 
   useEffect(() => {
@@ -1909,44 +1973,45 @@ const Requests = () => {
     map.on("load", function () {
       loadGeoJsonPlacesSourcesAndLayers(map);
       loadDoorAnimatedMarkerSourcesAndLayers();
+      loadUniversityGroundSourceAndLayer(map);
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
-        if (currentZoom >= 18) {
-          // removePlacesSourceAndLeyers(map);
-          hideAndShowPlacesSourcesAndLayers(map, "visible");
+        // if (currentZoom >= 18) {
+        //   // removePlacesSourceAndLeyers(map);
+        //   hideAndShowPlacesSourcesAndLayers(map, "visible");
 
-          addRasterImageSourceAndLayerFirstFloor(map);
-          firstFloorAreaSourceAndLayers(map);
+        //   addRasterImageSourceAndLayerFirstFloor(map);
+        //   firstFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerThirdFloor(map);
-          thirdFloorAreaSourceAndLayers(map);
+        //   addRasterImageSourceAndLayerThirdFloor(map);
+        //   thirdFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerFourthFloor(map);
-          fourthFloorAreaSourceAndLayers(map);
+        //   addRasterImageSourceAndLayerFourthFloor(map);
+        //   fourthFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerSecondFloor(map);
-          hiddenAreaSourceAndLayers(map);
-          renderSourceAndLayer("second-floor");
-          var flc_el = document.getElementById("floor-list-container");
-          if (flc_el) {
-            if (!flc_el.classList.contains("show")) {
-              flc_el.classList.add("show");
-            }
-          }
-        }
-        if (currentZoom < 18) {
-          var flc_el = document.getElementById("floor-list-container");
-          if (flc_el) {
-            console.log(flc_el.classList.contains("show"));
-            if (!flc_el.classList.contains("show")) {
-              flc_el.classList.remove("show");
-            }
-          }
-          // removeAllFloorsSourcesAndLayers(map);
-          hideFloorSourcesAndLayers(map, "hide-all");
-          loadGeoJsonPlacesSourcesAndLayers(map);
-        }
+        //   addRasterImageSourceAndLayerSecondFloor(map);
+        //   hiddenAreaSourceAndLayers(map);
+        //   renderSourceAndLayer("second-floor");
+        //   var flc_el = document.getElementById("floor-list-container");
+        //   if (flc_el) {
+        //     if (!flc_el.classList.contains("show")) {
+        //       flc_el.classList.add("show");
+        //     }
+        //   }
+        // }
+        // if (currentZoom < 18) {
+        //   var flc_el = document.getElementById("floor-list-container");
+        //   if (flc_el) {
+        //     console.log(flc_el.classList.contains("show"));
+        //     if (!flc_el.classList.contains("show")) {
+        //       flc_el.classList.remove("show");
+        //     }
+        //   }
+        //   // removeAllFloorsSourcesAndLayers(map);
+        //   hideFloorSourcesAndLayers(map, "hide-all");
+        //   loadGeoJsonPlacesSourcesAndLayers(map);
+        // }
       });
       laod3dBuildings(map);
     });
@@ -2108,6 +2173,11 @@ const Requests = () => {
     }
   }
 
+  const addDevice = () => {
+    var el = document.getElementById("add-device-wrapper");
+    if (el) el.classList.toggle("show");
+  }
+
   const cameraModal = () => {
       return <>  
         <Modal show={showCameraModal} onHide={toggleCameraView} className="mt-5">
@@ -2134,7 +2204,7 @@ const Requests = () => {
       )}
 
       {user.user_type === "student" && (
-        <div className="req-info-home" id="slide-in-request-penel">
+        <div className="req-info-home slide-from-left" id="slide-in-request-penel">
           <div className="float-right">
             <button type="button" onClick={ToggleSidePanel}>
               &times;
@@ -2197,6 +2267,17 @@ const Requests = () => {
                     </span>
                   </button>
                 </li>
+
+                <li>
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => addDevice() }
+                  >
+                    <i className="fas fa-pencil-alt"></i>
+                  </button>
+                </li>
+
                 <li>
                   <button
                     type="button"
@@ -2245,6 +2326,113 @@ const Requests = () => {
       )}
 
       <div className="map-container" ref={mapContainer} id="map-container" />
+      {/* add device form */}
+      <div className="left-panel-slide-in" id="add-device-wrapper">
+          <h4 className="text-center">Add Device</h4>
+          <div>
+            Device Id: <strong>A4</strong> 
+          </div>
+          <div>
+            Latitude: <strong>{"43.103817968593205"}</strong> 
+          </div>
+          <div>
+          Longitude: <strong>{"-89.35287125627"}</strong> 
+          </div>
+          <hr />
+          <div className="custom-group">
+            <label>Device Name<span className="text-danger">*</span></label>
+                <input type="text" 
+                name="device_name"
+                value={values.device_name || "" }
+                onChange={onChange} 
+                />
+          </div>
+
+          <div className="pb-2 pt-3">
+            <div class="d-flex justify-content-between">
+              <div className="d-inline">Building<span className="text-danger">*</span></div>
+              <div className="d-inline">Floor<span className="text-danger">*</span></div>
+            </div>
+            <div class="d-flex justify-content-between">
+              <div className="d-inline building-text">University Hall</div>
+              <div className="text-center pr-3 building-text">3</div>
+            </div>
+          </div>
+          <div className="mt-3 pt-2">
+            Device Type<span className="text-danger">*</span>
+            <div className="row mt-3">
+              <div className="col-sm-6">
+                <button type="button" className={"btn btn-outline-danger pl-2 pr-2 " + (deviceType === 'Lock' && 'active')} onClick={ ()=> setDeviceType("Lock")}><i className="fas fa-user-lock"></i> Lock</button>
+              </div>
+              <div className="col-sm-6">
+                <button type="button" className={"btn btn-outline-primary pl-2 pr-2 " + (deviceType === 'Camera' && 'active')}  onClick={ ()=> setDeviceType("Camera")}><i className="fas fa-video"></i> Camera</button>
+              </div>
+            </div>
+          </div>
+
+          <hr className="mt-3 mb-2" />
+          { deviceType === 'Lock' && 
+          <div className="mt-2">
+            Lock Type<span className="text-danger">*</span>
+              <div className="type-p mt-2">
+                  <InputRadio type="Building Entrance" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2"/>
+                  <InputRadio type="Interior Public" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
+                  <InputRadio type="Interior Private" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
+                  <InputRadio type="Tool / Machine" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
+                  <InputRadio type="Locker" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
+              </div> 
+          </div>
+        }
+        { deviceType === 'Camera' && <>
+          <div className="custom-group">
+            <label>Camera IP / URL<span className="text-danger">*</span></label>
+                <input type="text" 
+                name="camera_address"
+                value={values.camera_address || "" }
+                onChange={onChange} 
+                />
+          </div>
+          <div className="mt-2">Preview
+          <video className="h-auto mb-5" style={{ width: 250, borderRadius: 5, marginTop:5 }} autoPlay muted>
+              <source src={values.camera_address || "https://f5.aos.wisc.edu/webcam_movies/latest_northwest_today_1024x768.mp4"} type="video/mp4" />
+              Your browser does not support the video tag.
+          </video>
+          </div>
+          </>
+          }
+
+          <div className="row mt-3">
+            <div className="col-sm-6">
+              <button type="button" className="btn btn-outline-danger pr-4 pl-4" onClick={ ()=> setDeviceType("Lock")}> Cancel</button>
+            </div>
+            <div className="col-sm-6">
+              <button type="button" className="btn btn-outline-success pr-4 pl-4" onClick={ ()=> setDeviceType("Lock")}> Add</button>
+            </div>
+          </div>
+        </div>
+    {/* add device */}
+
+    {/* door status panel */}
+      <div className="left-panel-slide-in" id="door-status-panel">
+        <h4 className="text-center">Status</h4>
+        <div className="p-3">
+          <div className="mb-3">
+              Device Id: <span className="text-18">A4</span> 
+          </div>
+          <div className="mb-3">
+              Name: <span className="text-18">Room {values.room_number || "" }</span> 
+          </div>
+          <div className="mb-1">
+              Type: <span className="text-18">Door Interior Public</span> 
+          </div>
+        </div>
+
+        <div class="text-center">
+          <button type="button" className="btn btn-outline-primary pl-2 pr-2" onClick={ ()=> alert("view history")}> View History</button>
+        </div>
+      </div>
+
+    {/* door status panel */}
       <div className="floor-list-container text-center" id="floor-list-container">
         <div className="p-2">Floor</div>
         <ul>
