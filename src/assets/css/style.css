@@ -3175,3 +3175,41 @@ img {
 .text-18 {
   font-size: 18px;
 }
+.row-status{ 
+	display:flex; 
+	position:relative;
+	}
+.row-status:not(:last-child){ padding-bottom:20px; }	
+.row-status:after{
+	left:0px;
+	right:0px;	
+	width:1px;
+	bottom:5px;
+	content:" ";
+	height:15px;
+	margin:0px auto;
+	position:absolute;
+	background-color:#666;	
+	}	
+.row-status > div{ 
+	width:50%; 
+	padding:0% 5%;
+	}
+.row-status > div:first-child{ 
+	text-align:right;
+  font-size: 12px; 
+	}	
+.row-status > div:last-child{ 
+	text-align:left;
+  font-size: 12px;
+}
+.icon-added-user, .icon-closed-door, .icon-locked, .icon-open-door, .icon-unlocked{
+	width:30px;
+	height:30px;
+	margin:0px auto;
+	}
+.icon-added-user{ background:url("../icons/svg/icon-added-user.svg") no-repeat center top / 80%; }
+.icon-closed-door{ background:url("../icons/svg/icon-closed-door.svg") no-repeat center top / 80%; }
+.icon-locked{ background:url("../icons/svg/icon-locked.svg") no-repeat center top / 80%; }	
+.icon-open-door{ background:url("../icons/svg/icon-open-door.svg") no-repeat center top / 80%; }
+.icon-unlocked{ background:url("../icons/svg/icon-unlocked.svg") no-repeat center top / 80%; }

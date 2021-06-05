@@ -57,17 +57,21 @@ const Requests = () => {
 
   const [showLockDown, setShowLockDown] = useState(false);
 
-  const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}])
+  const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}]);
+  const [engineeringHallFloorArray, setEngineeringHallFloorArray] = useState([{floor:'eh-first-floor', active: false}, {floor:'eh-second-floor', active: false}, {floor:'eh-third-floor', active: false}]);
 
   const [pitch, setPitch] = useState(0);
   const [zoom, setZoom] = useState(15);
   const [center, setCenter] = useState([-89.41068, 43.07561]);
   const [bearing, setBearing] = useState(0);
   const [viewIn3d, setViewIn3d] = useState(false);
+  const [viewHistory, setViewHistory] = useState(false);
+  const [lngLat, setLngLat] = useState({ lng: -89.40864500185694, lat: 43.071436442382236 });
+
 
   const [selectedType, setSelectedType] = useState("Interior Private");
   const [deviceType, setDeviceType] = useState("");
-  const [values, setValues] = useState({});
+  const [values, setValues] = useState({ camera_address: "https://f5.aos.wisc.edu/webcam_movies/latest_northwest_today_1024x768.mp4" });
 
   const onChange = (e) => {
     const { name, value } = e.target;
@@ -637,7 +641,6 @@ const Requests = () => {
               <span className="text-dark">Specific:</span>
               <div className="checkboxes-content">
                 {buildingsList.map((obj, index) => {
-                  // console.log( typeof(  ))
                   return (
                     <label className="container" key={index + 1}>
                       {" "}
@@ -775,6 +778,34 @@ const Requests = () => {
     //   });
     // });
   };
+
+
+  const renderEngineeringHallSourceAndLayer = (floorClicked, indexNumber) => {
+    let engineeringHallFloorArrayUpdated = engineeringHallFloorArray.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
+    });
+    setEngineeringHallFloorArray(engineeringHallFloorArrayUpdated);
+    hideEngineeringHallFloorSourcesAndLayers(mapObj, floorClicked);
+  }
+
+  const hideEngineeringHallFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
+
+    var leyerVisibility;
+
+    engineeringHallFloorArray.forEach( (obj) => {
+      leyerVisibility = 'none'
+      if(obj.floor === floorNotToHide){
+        leyerVisibility = 'visible'
+      }
+      mapInstance.setLayoutProperty(`${obj.floor}-layer`, "visibility", leyerVisibility);
+      mapInstance.setLayoutProperty(`${obj.floor}-layer-outline`, "visibility", leyerVisibility);
+      mapInstance.setLayoutProperty(`${obj.floor}-layer-hover`, "visibility", leyerVisibility);
+      mapInstance.setLayoutProperty(`${obj.floor}-layer-border-hover`, "visibility", leyerVisibility);
+    });
+
+  }
 
   const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
 
@@ -1857,8 +1888,8 @@ const Requests = () => {
   const loadDoorAnimatedMarkerSourcesAndLayers = () => {
 
     const images =[
-      {url: './24x24.png', id: 'image_1'},
-      {url: './42x42.png', id: 'image_2'}
+      {url: './markers/24x24.png', id: 'image_1'},
+      {url: './markers/42x42.png', id: 'image_2'}
     ];
     images.map(img => {
       mapObj.loadImage(img.url, function (error, res) {
@@ -1927,18 +1958,6 @@ const Requests = () => {
       url: "mapbox://alexmahnke.0foqppfl",
     });
 
-    // mapInstance.addLayer({
-    //   "id": "ug-layer",
-    //   "type": "fill",
-    //   "source": "ug-source",
-    //   "source-layer": "University-Grounds-6adfp9",
-    //   "layout": {},
-    //   "paint": {
-    //     "fill-color": "#1daefc", // blue color fill
-    //     "fill-outline-color": "#1daefc",
-    //     "fill-opacity": 0.5
-    //   },
-    // });
     mapInstance.addLayer({
       id: "ug-layer-outline",
       type: "line",
@@ -1951,6 +1970,340 @@ const Requests = () => {
     });
   }
 
+  const loadEngineeringHallsFirstFloor = mapInstance => {
+    if (mapInstance.getSource("eh-first-floor-source")) return;
+    // engineering hall
+    mapInstance.addSource("eh-first-floor-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.8jvpmyng",
+    });
+    //set up data layers
+    mapInstance.addLayer(
+      {
+        id: "eh-first-floor-layer",
+        type: "fill",
+        source: "eh-first-floor-source",
+        "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+        paint: {
+          // 'fill-outline-color': '#0066ff',
+          // 'fill-color': '#0066ff',
+          "fill-opacity": 0,
+        },
+        "paint.tilted": {},
+      },
+      "water"
+    );
+
+    mapInstance.addLayer({
+      id: "eh-first-floor-layer-outline",
+      type: "line",
+      source: "eh-first-floor-source",
+      "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 1,
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "eh-first-floor-layer-hover",
+      type: "fill",
+      source: "eh-first-floor-source",
+      "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+      layout: {},
+      paint: {
+        "fill-outline-color": "#ff0000",
+        "fill-color": "#ffffff",
+        "fill-opacity": 0.5,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.addLayer({
+      id: "eh-first-floor-layer-border-hover",
+      type: "line",
+      source: "eh-first-floor-source",
+      "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 4,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.on("click", "eh-first-floor-layer", function (e) {
+
+      var features = e.features[0];
+      var props = features.properties;
+      var coordinates = features.geometry.coordinates;
+      // new mapboxgl.Popup()
+      // .setLngLat(coordinates)
+      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
+      // .addTo(mapInstance);
+    });
+
+    mapInstance.on("mousemove", "eh-first-floor-layer", (e) => {
+      var features = e.features;
+      // Single out the first found feature.
+      var ft = features[0];
+      var showTooltip = ft && ft.properties;
+      //  Add features that share the same PARCEL_TYP to the hover layer.
+      if (showTooltip) {
+        mapInstance.setFilter("eh-first-floor-layer-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+
+        mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+      } else {
+        mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
+        mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          "",
+        ]);
+      }
+    });
+    mapInstance.on("mouseleave", "eh-first-floor-layer", function () {
+      mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
+      mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+        "in",
+        "ParcelNo_",
+        "",
+      ]);
+    });
+  }
+
+  const loadEngineeringHallsSecondFloor = mapInstance => {
+    if (mapInstance.getSource("eh-second-floor-source")) return;
+    // engineering hall
+    mapInstance.addSource("eh-second-floor-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.dp86bu0m",
+    });
+    //set up data layers
+    mapInstance.addLayer(
+      {
+        id: "eh-second-floor-layer",
+        type: "fill",
+        source: "eh-second-floor-source",
+        "source-layer": "Eng-hall-2nd_Floor-2z2901",
+        paint: {
+          // 'fill-outline-color': '#0066ff',
+          // 'fill-color': '#0066ff',
+          "fill-opacity": 0,
+        },
+        "paint.tilted": {},
+      },
+      "water"
+    );
+
+    mapInstance.addLayer({
+      id: "eh-second-floor-layer-outline",
+      type: "line",
+      source: "eh-second-floor-source",
+      "source-layer": "Eng-hall-2nd_Floor-2z2901",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 1,
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "eh-second-floor-layer-hover",
+      type: "fill",
+      source: "eh-second-floor-source",
+      "source-layer": "Eng-hall-2nd_Floor-2z2901",
+      layout: {},
+      paint: {
+        "fill-outline-color": "#ff0000",
+        "fill-color": "#ffffff",
+        "fill-opacity": 0.5,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.addLayer({
+      id: "eh-second-floor-layer-border-hover",
+      type: "line",
+      source: "eh-second-floor-source",
+      "source-layer": "Eng-hall-2nd_Floor-2z2901",
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 4,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.on("click", "eh-second-floor-layer", function (e) {
+
+      var features = e.features[0];
+      var props = features.properties;
+      var coordinates = features.geometry.coordinates;
+      // new mapboxgl.Popup()
+      // .setLngLat(coordinates)
+      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
+      // .addTo(mapInstance);
+    });
+
+    mapInstance.on("mousemove", "eh-second-floor-layer", (e) => {
+      var features = e.features;
+      // Single out the first found feature.
+      var ft = features[0];
+      var showTooltip = ft && ft.properties;
+      //  Add features that share the same PARCEL_TYP to the hover layer.
+      if (showTooltip) {
+        mapInstance.setFilter("eh-second-floor-layer-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+
+        mapInstance.setFilter("eh-second-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+      } else {
+        mapInstance.setFilter("eh-second-floor-layer-hover", ["in", "ParcelNo_", ""]);
+        mapInstance.setFilter("eh-second-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          "",
+        ]);
+      }
+    });
+    mapInstance.on("mouseleave", "eh-second-floor-layer", function () {
+      mapInstance.setFilter("eh-second-floor-layer-hover", ["in", "ParcelNo_", ""]);
+      mapInstance.setFilter("eh-second-floor-layer-border-hover", [
+        "in",
+        "ParcelNo_",
+        "",
+      ]);
+    });
+  }
+
+  const loadEngineeringHallsThirdFloor = mapInstance => {
+    if (mapInstance.getSource("eh-third-floor-source")) return;
+    // engineering hall
+    mapInstance.addSource("eh-third-floor-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.2o423zbr",
+    });
+    //set up data layers
+    mapInstance.addLayer(
+      {
+        id: "eh-third-floor-layer",
+        type: "fill",
+        source: "eh-third-floor-source",
+        "source-layer": "Eng-Hall-3rd_Floor-cco71i",
+        paint: {
+          // 'fill-outline-color': '#0066ff',
+          // 'fill-color': '#0066ff',
+          "fill-opacity": 0,
+        },
+        "paint.tilted": {},
+      },
+      "water"
+    );
+
+    mapInstance.addLayer({
+      id: "eh-third-floor-layer-outline",
+      type: "line",
+      source: "eh-third-floor-source",
+      "source-layer": "Eng-Hall-3rd_Floor-cco71i",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 1,
+      },
+    });
+
+    mapInstance.addLayer({
+      id: "eh-third-floor-layer-hover",
+      type: "fill",
+      source: "eh-third-floor-source",
+      "source-layer": "Eng-Hall-3rd_Floor-cco71i",
+      layout: {},
+      paint: {
+        "fill-outline-color": "#ff0000",
+        "fill-color": "#ffffff",
+        "fill-opacity": 0.5,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.addLayer({
+      id: "eh-third-floor-layer-border-hover",
+      type: "line",
+      source: "eh-third-floor-source",
+      "source-layer": "Eng-Hall-3rd_Floor-cco71i",
+      paint: {
+        "line-color": "#ffffff",
+        "line-width": 4,
+      },
+      filter: ["==", "ParcelNo_", ""],
+    });
+
+    mapInstance.on("click", "eh-third-floor-layer", function (e) {
+
+      var features = e.features[0];
+      var props = features.properties;
+      var coordinates = features.geometry.coordinates;
+      // new mapboxgl.Popup()
+      // .setLngLat(coordinates)
+      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
+      // .addTo(mapInstance);
+    });
+
+    mapInstance.on("mousemove", "eh-third-floor-layer", (e) => {
+      var features = e.features;
+      // Single out the first found feature.
+      var ft = features[0];
+      var showTooltip = ft && ft.properties;
+      //  Add features that share the same PARCEL_TYP to the hover layer.
+      if (showTooltip) {
+        mapInstance.setFilter("eh-third-floor-layer-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+
+        mapInstance.setFilter("eh-third-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          ft.properties.ParcelNo_,
+        ]);
+      } else {
+        mapInstance.setFilter("eh-third-floor-layer-hover", ["in", "ParcelNo_", ""]);
+        mapInstance.setFilter("eh-third-floor-layer-border-hover", [
+          "in",
+          "ParcelNo_",
+          "",
+        ]);
+      }
+    });
+    mapInstance.on("mouseleave", "eh-third-floor-layer", function () {
+      mapInstance.setFilter("eh-third-floor-layer-hover", ["in", "ParcelNo_", ""]);
+      mapInstance.setFilter("eh-third-floor-layer-border-hover", [
+        "in",
+        "ParcelNo_",
+        "",
+      ]);
+    });
+  }
+
+  const loadEngineeringHallsSourcesAndLayers = mapInstance => {
+    loadEngineeringHallsFirstFloor(mapInstance);
+    loadEngineeringHallsSecondFloor(mapInstance);
+    loadEngineeringHallsThirdFloor(mapInstance);
+    renderEngineeringHallSourceAndLayer('eh-first-floor', 0);
+
+  }
   useEffect(() => {
     getRequestListSheet();
     getBuildingList();
@@ -1974,6 +2327,7 @@ const Requests = () => {
       loadGeoJsonPlacesSourcesAndLayers(map);
       loadDoorAnimatedMarkerSourcesAndLayers();
       loadUniversityGroundSourceAndLayer(map);
+      loadEngineeringHallsSourcesAndLayers(map);
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
@@ -2176,6 +2530,30 @@ const Requests = () => {
   const addDevice = () => {
     var el = document.getElementById("add-device-wrapper");
     if (el) el.classList.toggle("show");
+
+    
+    const markerEl = document.querySelector('.mapboxgl-marker');
+    
+    if (markerEl) {
+       markerEl.remove();
+    }else{
+      var marker = new mapboxgl.Marker({
+        draggable: true
+      })
+      .setLngLat([-89.40864500185694, 43.071436442382236])
+      .addTo(mapObj);
+
+    marker.on('dragend', function() {
+      var currentlngLat = marker.getLngLat();
+
+      // coordinates.innerHTML =
+      //     'Longitude: ' + lngLat.lng + '<br />Latitude: ' + lngLat.lat;
+      var Latitude = currentlngLat.lat;
+      var Longitude = currentlngLat.lng;
+      console.log(Latitude, Longitude);
+      setLngLat({ lat: Latitude, lng: Longitude});
+    });
+    }
   }
 
   const cameraModal = () => {
@@ -2204,7 +2582,10 @@ const Requests = () => {
       )}
 
       {user.user_type === "student" && (
-        <div className="req-info-home slide-from-left" id="slide-in-request-penel">
+        <div
+          className="req-info-home slide-from-left"
+          id="slide-in-request-penel"
+        >
           <div className="float-right">
             <button type="button" onClick={ToggleSidePanel}>
               &times;
@@ -2272,7 +2653,7 @@ const Requests = () => {
                   <button
                     type="button"
                     className="btn btn-outline-secondary"
-                    onClick={() => addDevice() }
+                    onClick={() => addDevice()}
                   >
                     <i className="fas fa-pencil-alt"></i>
                   </button>
@@ -2328,123 +2709,292 @@ const Requests = () => {
       <div className="map-container" ref={mapContainer} id="map-container" />
       {/* add device form */}
       <div className="left-panel-slide-in" id="add-device-wrapper">
-          <h4 className="text-center">Add Device</h4>
-          <div>
-            Device Id: <strong>A4</strong> 
-          </div>
-          <div>
-            Latitude: <strong>{"43.103817968593205"}</strong> 
-          </div>
-          <div>
-          Longitude: <strong>{"-89.35287125627"}</strong> 
-          </div>
-          <hr />
-          <div className="custom-group">
-            <label>Device Name<span className="text-danger">*</span></label>
-                <input type="text" 
-                name="device_name"
-                value={values.device_name || "" }
-                onChange={onChange} 
-                />
-          </div>
+        <h4 className="text-center">Add Device</h4>
+        <div>
+          Device Id: <strong>A4</strong>
+        </div>
+        <div>
+          Latitude: <strong>{ (lngLat.lat).toFixed(8) }</strong>
+        </div>
+        <div>
+          Longitude: <strong>{ (lngLat.lng).toFixed(8) }</strong>
+        </div>
+        <hr />
+        <div className="custom-group">
+          <label>
+            Device Name<span className="text-danger">*</span>
+          </label>
+          <input
+            type="text"
+            name="device_name"
+            value={values.device_name || ""}
+            onChange={onChange}
+          />
+        </div>
 
-          <div className="pb-2 pt-3">
-            <div class="d-flex justify-content-between">
-              <div className="d-inline">Building<span className="text-danger">*</span></div>
-              <div className="d-inline">Floor<span className="text-danger">*</span></div>
+        <div className="pb-2 pt-3">
+          <div class="d-flex justify-content-between">
+            <div className="d-inline">
+              Building<span className="text-danger">*</span>
             </div>
-            <div class="d-flex justify-content-between">
-              <div className="d-inline building-text">University Hall</div>
-              <div className="text-center pr-3 building-text">3</div>
-            </div>
-          </div>
-          <div className="mt-3 pt-2">
-            Device Type<span className="text-danger">*</span>
-            <div className="row mt-3">
-              <div className="col-sm-6">
-                <button type="button" className={"btn btn-outline-danger pl-2 pr-2 " + (deviceType === 'Lock' && 'active')} onClick={ ()=> setDeviceType("Lock")}><i className="fas fa-user-lock"></i> Lock</button>
-              </div>
-              <div className="col-sm-6">
-                <button type="button" className={"btn btn-outline-primary pl-2 pr-2 " + (deviceType === 'Camera' && 'active')}  onClick={ ()=> setDeviceType("Camera")}><i className="fas fa-video"></i> Camera</button>
-              </div>
+            <div className="d-inline">
+              Floor<span className="text-danger">*</span>
             </div>
           </div>
-
-          <hr className="mt-3 mb-2" />
-          { deviceType === 'Lock' && 
-          <div className="mt-2">
-            Lock Type<span className="text-danger">*</span>
-              <div className="type-p mt-2">
-                  <InputRadio type="Building Entrance" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2"/>
-                  <InputRadio type="Interior Public" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
-                  <InputRadio type="Interior Private" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
-                  <InputRadio type="Tool / Machine" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
-                  <InputRadio type="Locker" selectedType={selectedType} change={onValueChange} className="in-radio radio-small pb-2" />
-              </div> 
+          <div class="d-flex justify-content-between">
+            <div className="d-inline building-text">University Hall</div>
+            <div className="text-center pr-3 building-text">3</div>
           </div>
-        }
-        { deviceType === 'Camera' && <>
-          <div className="custom-group">
-            <label>Camera IP / URL<span className="text-danger">*</span></label>
-                <input type="text" 
-                name="camera_address"
-                value={values.camera_address || "" }
-                onChange={onChange} 
-                />
-          </div>
-          <div className="mt-2">Preview
-          <video className="h-auto mb-5" style={{ width: 250, borderRadius: 5, marginTop:5 }} autoPlay muted>
-              <source src={values.camera_address || "https://f5.aos.wisc.edu/webcam_movies/latest_northwest_today_1024x768.mp4"} type="video/mp4" />
-              Your browser does not support the video tag.
-          </video>
-          </div>
-          </>
-          }
-
+        </div>
+        <div className="mt-3 pt-2">
+          Device Type<span className="text-danger">*</span>
           <div className="row mt-3">
             <div className="col-sm-6">
-              <button type="button" className="btn btn-outline-danger pr-4 pl-4" onClick={ ()=> setDeviceType("Lock")}> Cancel</button>
+              <button
+                type="button"
+                className={
+                  "btn btn-outline-danger pl-2 pr-2 " +
+                  (deviceType === "Lock" && "active")
+                }
+                onClick={() => setDeviceType("Lock")}
+              >
+                <i className="fas fa-user-lock"></i> Lock
+              </button>
             </div>
             <div className="col-sm-6">
-              <button type="button" className="btn btn-outline-success pr-4 pl-4" onClick={ ()=> setDeviceType("Lock")}> Add</button>
+              <button
+                type="button"
+                className={
+                  "btn btn-outline-primary pl-2 pr-2 " +
+                  (deviceType === "Camera" && "active")
+                }
+                onClick={() => setDeviceType("Camera")}
+              >
+                <i className="fas fa-video"></i> Camera
+              </button>
             </div>
           </div>
         </div>
-    {/* add device */}
 
-    {/* door status panel */}
+        <hr className="mt-3 mb-2" />
+        {deviceType === "Lock" && (
+          <div className="mt-2">
+            Lock Type<span className="text-danger">*</span>
+            <div className="type-p mt-2">
+              <InputRadio
+                type="Building Entrance"
+                selectedType={selectedType}
+                change={onValueChange}
+                className="in-radio radio-small pb-2"
+              />
+              <InputRadio
+                type="Interior Public"
+                selectedType={selectedType}
+                change={onValueChange}
+                className="in-radio radio-small pb-2"
+              />
+              <InputRadio
+                type="Interior Private"
+                selectedType={selectedType}
+                change={onValueChange}
+                className="in-radio radio-small pb-2"
+              />
+              <InputRadio
+                type="Tool / Machine"
+                selectedType={selectedType}
+                change={onValueChange}
+                className="in-radio radio-small pb-2"
+              />
+              <InputRadio
+                type="Locker"
+                selectedType={selectedType}
+                change={onValueChange}
+                className="in-radio radio-small pb-2"
+              />
+            </div>
+          </div>
+        )}
+        {deviceType === "Camera" && (
+          <>
+            <div className="custom-group">
+              <label>
+                Camera IP / URL<span className="text-danger">*</span>
+              </label>
+              <input
+                type="text"
+                name="camera_address"
+                value={values.camera_address}
+                onChange={onChange}
+              />
+            </div>
+            <div className="mt-2">
+              Preview
+              <video
+                className="h-auto mb-5"
+                style={{ width: 250, borderRadius: 5, marginTop: 5 }}
+                autoPlay
+                muted
+              >
+                <source
+                  src={values.camera_address}
+                  type="video/mp4"
+                />
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </>
+        )}
+
+        <div className="row mt-3">
+          <div className="col-sm-6">
+            <button
+              type="button"
+              className="btn btn-outline-danger pr-4 pl-4"
+              onClick={() => setDeviceType("Lock")}
+            >
+              {" "}
+              Cancel
+            </button>
+          </div>
+          <div className="col-sm-6">
+            <button
+              type="button"
+              className="btn btn-outline-success pr-4 pl-4"
+              onClick={() => setDeviceType("Lock")}
+            >
+              {" "}
+              Add
+            </button>
+          </div>
+        </div>
+      </div>
+      {/* add device */}
+
+      {/* door status panel */}
       <div className="left-panel-slide-in" id="door-status-panel">
         <h4 className="text-center">Status</h4>
         <div className="p-3">
           <div className="mb-3">
-              Device Id: <span className="text-18">A4</span> 
+            Device Id: <span className="text-18">A4</span>
           </div>
           <div className="mb-3">
-              Name: <span className="text-18">Room {values.room_number || "" }</span> 
+            Name:{" "}
+            <span className="text-18">Room {values.room_number || ""}</span>
           </div>
           <div className="mb-1">
-              Type: <span className="text-18">Door Interior Public</span> 
+            Type: <span className="text-18">Door Interior Public</span>
           </div>
         </div>
 
-        <div class="text-center">
-          <button type="button" className="btn btn-outline-primary pl-2 pr-2" onClick={ ()=> alert("view history")}> View History</button>
+        { (!viewHistory) ? <div className="text-center">
+          <button
+            type="button"
+            className="btn btn-outline-primary pl-2 pr-2"
+            onClick={() => setViewHistory(true)}
+          >
+            {" "}
+            View History
+          </button>
         </div>
+        : <>
+        <hr className="mt-2 mb-2"/>
+        <div className="row-status mt-3 d-flex justify-content-between">
+          <div>Just Now</div>
+          <div className="text-center">
+            <div className="icon-open-door"></div>
+          </div>
+          <div>Open Door</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-unlocked"></div>
+          </div>
+          <div>Unlocked</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-locked"></div>
+          </div>
+          <div>Locked</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-closed-door"></div>
+          </div>
+          <div>Closed Door</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-open-door"></div>
+          </div>
+          <div>Open Door</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-unlocked"></div>
+          </div>
+          <div>Unlocked</div>
+        </div>
+        <div className="row-status  d-flex justify-content-between">
+          <div>Date Time</div>
+          <div>
+            <div className="icon-added-user"></div>
+          </div>
+          <div>Added User</div>
+        </div>
+        </>
+        }
       </div>
 
-    {/* door status panel */}
-      <div className="floor-list-container text-center" id="floor-list-container">
+      {/* door status panel */}
+      <div
+        className="floor-list-container text-center"
+        id="floor-list-container"
+      >
         <div className="p-2">Floor</div>
         <ul>
-          {
-            floorArray.map( (obj, index) => {
-              return <li key={index + 1} className={`floor-list-number ${obj.active && 'active'}`} onClick={() => renderSourceAndLayer(obj.floor, index)}>
-                        <span>{index + 1}</span>
-                     </li>;
-            })
-          }
+          {floorArray.map((obj, index) => {
+            return (
+              <li
+                key={index + 1}
+                className={`floor-list-number ${obj.active && "active"}`}
+                onClick={() => renderSourceAndLayer(obj.floor, index)}
+              >
+                <span>{index + 1}</span>
+              </li>
+            );
+          })}
         </ul>
       </div>
+
+      {/* university Hall */}
+
+      <div
+        className="floor-list-container text-center"
+        // id="floor-list-container"
+        style={{ display: 'block'}}
+      >
+        <div className="p-2">Floor</div>
+        <ul>
+          {engineeringHallFloorArray.map((obj, index) => {
+            return (
+              <li
+                key={index + 1}
+                className={`floor-list-number ${obj.active && "active"}`}
+                onClick={() => renderEngineeringHallSourceAndLayer(obj.floor, index)}
+              >
+                <span>{index + 1}</span>
+              </li>
+            );
+          })}
+        </ul>
+      </div>
+
       {user.user_type !== "student" && (
         <div className="request-sidebar" id="sidebar">
           {requestList.length !== 0 ? (
@@ -2472,7 +3022,7 @@ const Requests = () => {
       )}
       {/* Modal */}
       {lockDownModal()}
-      { cameraModal() }
+      {cameraModal()}
       {lockDownInAnyBuilding === true && (
         <h1 className="emergency">EMERGENCY ALERT: BUILDINGS IN LOCKDOWN</h1>
       )}
