@@ -1821,10 +1821,14 @@ const Requests = () => {
       type: "image",
       url: `../raster-image/3.png`,
       coordinates: [
-        [-89.40830000000, 43.071700],
-        [-89.40890000000, 43.071200],
-        [-89.40830000000, 43.07120000000],
-        [-89.40890000000, 43.07170000000],
+        // [-89.40830000000, 43.071700],
+        // [-89.40890000000, 43.071200],
+        // [-89.40830000000, 43.07120000000],
+        // [-89.40890000000, 43.07170000000],
+        [-89.40892029, 43.07186508],
+        [-89.40809631, 43.07186508],
+        [-89.40809631, 43.07101059],
+        [-89.40892029, 43.07101059],
       ],
     });
     mapInstance.addLayer({
@@ -1844,10 +1848,10 @@ const Requests = () => {
       type: "image",
       url: `../raster-image/4.png`,
       coordinates: [
-        [-89.40830000000, 43.07170000000],
-        [-89.40890000000, 43.07120000000],
-        [-89.40830000000, 43.07120000000],
-        [-89.40890000000, 43.07170000000],
+        [-89.40892029, 43.07186508],
+        [-89.40809631, 43.07186508],
+        [-89.40809631, 43.07101059],
+        [-89.40892029, 43.07101059],
       ],
     });
 
@@ -1868,10 +1872,10 @@ const Requests = () => {
       type: "image",
       url: `../raster-image/1.png`,
       coordinates: [
-        [-89.408100, 43.071900],
-        [-89.408900, 43.071900],
-        [-89.408900, 43.071000],
-        [-89.408100, 43.071000],
+        [-89.40892029, 43.07186508],
+        [-89.40809631, 43.07186508],
+        [-89.40809631, 43.07101059],
+        [-89.40892029, 43.07101059],
       ],
     });
 
@@ -2203,47 +2207,47 @@ const Requests = () => {
     map.on("load", function () {
       loadGeoJsonPlacesSourcesAndLayers(map);
       loadDoorAnimatedMarkerSourcesAndLayers();
-      loadUniversityGroundSourceAndLayer(map);
-      loadEngineeringHallsSourcesAndLayers(map);
-      loadBodgery(map);
+      // loadUniversityGroundSourceAndLayer(map);
+      // loadEngineeringHallsSourcesAndLayers(map);
+      // loadBodgery(map);
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
-        // if (currentZoom >= 18) {
-        //   // removePlacesSourceAndLeyers(map);
-        //   hideAndShowPlacesSourcesAndLayers(map, "visible");
+        if (currentZoom >= 18) {
+          // removePlacesSourceAndLeyers(map);
+          hideAndShowPlacesSourcesAndLayers(map, "visible");
 
-        //   addRasterImageSourceAndLayerFirstFloor(map);
-        //   firstFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerFirstFloor(map);
+          firstFloorAreaSourceAndLayers(map);
 
-        //   addRasterImageSourceAndLayerThirdFloor(map);
-        //   thirdFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerThirdFloor(map);
+          thirdFloorAreaSourceAndLayers(map);
 
-        //   addRasterImageSourceAndLayerFourthFloor(map);
-        //   fourthFloorAreaSourceAndLayers(map);
+          addRasterImageSourceAndLayerFourthFloor(map);
+          fourthFloorAreaSourceAndLayers(map);
 
-        //   addRasterImageSourceAndLayerSecondFloor(map);
-        //   hiddenAreaSourceAndLayers(map);
-        //   renderSourceAndLayer("second-floor");
-        //   var flc_el = document.getElementById("floor-list-container");
-        //   if (flc_el) {
-        //     if (!flc_el.classList.contains("show")) {
-        //       flc_el.classList.add("show");
-        //     }
-        //   }
-        // }
-        // if (currentZoom < 18) {
-        //   var flc_el = document.getElementById("floor-list-container");
-        //   if (flc_el) {
-        //     console.log(flc_el.classList.contains("show"));
-        //     if (!flc_el.classList.contains("show")) {
-        //       flc_el.classList.remove("show");
-        //     }
-        //   }
-        //   // removeAllFloorsSourcesAndLayers(map);
-        //   hideFloorSourcesAndLayers(map, "hide-all");
-        //   loadGeoJsonPlacesSourcesAndLayers(map);
-        // }
+          addRasterImageSourceAndLayerSecondFloor(map);
+          hiddenAreaSourceAndLayers(map);
+          renderSourceAndLayer("second-floor");
+          var flc_el = document.getElementById("floor-list-container");
+          if (flc_el) {
+            if (!flc_el.classList.contains("show")) {
+              flc_el.classList.add("show");
+            }
+          }
+        }
+        if (currentZoom < 18) {
+          var flc_el = document.getElementById("floor-list-container");
+          if (flc_el) {
+            console.log(flc_el.classList.contains("show"));
+            if (!flc_el.classList.contains("show")) {
+              flc_el.classList.remove("show");
+            }
+          }
+          // removeAllFloorsSourcesAndLayers(map);
+          hideFloorSourcesAndLayers(map, "hide-all");
+          loadGeoJsonPlacesSourcesAndLayers(map);
+        }
       });
       laod3dBuildings(map);
     });
@@ -2852,7 +2856,7 @@ const Requests = () => {
 
       {/* university Hall */}
 
-      <div
+      {/* <div
         className="floor-list-container text-center"
         // id="floor-list-container"
         style={{ display: 'block'}}
@@ -2871,7 +2875,7 @@ const Requests = () => {
             );
           })}
         </ul>
-      </div>
+      </div> */}
 
       {user.user_type !== "student" && (
         <div className="request-sidebar" id="sidebar">

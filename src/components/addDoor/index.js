@@ -43,20 +43,20 @@ export default function AddDoor (props) {
             zoom: 18
         });
     
-            var marker = new mapboxgl.Marker({
-                draggable: true
-            })
-                .setLngLat([-89.40864500185694, 43.071436442382236])
-                .addTo(map);
-            function onDragEnd() {
-                    var lngLat = marker.getLngLat();
-                    coordinates.style.display = 'block';
-                    coordinates.innerHTML =
-                        'Longitude: ' + lngLat.lng + '<br />Latitude: ' + lngLat.lat;
-                        Latitude = lngLat.lat; Longitude = lngLat.lng;
+        var marker = new mapboxgl.Marker({
+            draggable: true
+        })
+            .setLngLat([-89.40864500185694, 43.071436442382236])
+            .addTo(map);
+        function onDragEnd() {
+                var lngLat = marker.getLngLat();
+                coordinates.style.display = 'block';
+                coordinates.innerHTML =
+                    'Longitude: ' + lngLat.lng + '<br />Latitude: ' + lngLat.lat;
+                    Latitude = lngLat.lat; Longitude = lngLat.lng;
 
-            }
-            marker.on('dragend', onDragEnd);
+        }
+        marker.on('dragend', onDragEnd);
 
         }, []);
 
