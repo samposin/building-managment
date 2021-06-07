@@ -2126,6 +2126,61 @@ const Requests = () => {
     renderEngineeringHallSourceAndLayer('eh-first-floor', 0);
 
   }
+
+  const loadBodgery = mapInstance => {
+    // if (mapInstance.getSource("bodgery-source")) return;
+
+    mapInstance.addSource("bodgery-1-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.4fwc2s0y",
+    });
+
+    mapInstance.addLayer({
+      id: "bodgery-1-layer-outline",
+      type: "line",
+      source: "bodgery-1-source",
+      "source-layer": "Bodgrey-parcels-2h796p",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 2,
+      },
+    });
+
+    mapInstance.addSource("bodgery-2-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.3i41fj3f",
+    });
+
+
+    mapInstance.addLayer({
+      id: "bodgery-2-layer-outline",
+      type: "line",
+      source: "bodgery-2-source",
+      "source-layer": "Bodgrey-boundary-19uri7",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 2,
+      },
+    });
+
+    mapInstance.addSource("bodgery-3-source", {
+      type: "vector",
+      url: "mapbox://alexmahnke.0on3svda",
+    });
+
+
+    mapInstance.addLayer({
+      id: "bodgery-3-layer-outline",
+      type: "line",
+      source: "bodgery-3-source",
+      "source-layer": "Bodgrey_points-7pp0nv",
+      paint: {
+        "line-color": "#0066ff",
+        "line-width": 2,
+      },
+    });
+  }
+
   useEffect(() => {
     getRequestListSheet();
     getBuildingList();
@@ -2150,6 +2205,7 @@ const Requests = () => {
       loadDoorAnimatedMarkerSourcesAndLayers();
       loadUniversityGroundSourceAndLayer(map);
       loadEngineeringHallsSourcesAndLayers(map);
+      loadBodgery(map);
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
