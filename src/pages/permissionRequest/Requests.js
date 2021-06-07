@@ -799,10 +799,10 @@ const Requests = () => {
       if(obj.floor === floorNotToHide){
         leyerVisibility = 'visible'
       }
-      mapInstance.setLayoutProperty(`${obj.floor}-layer`, "visibility", leyerVisibility);
+      // mapInstance.setLayoutProperty(`${obj.floor}-layer`, "visibility", leyerVisibility);
       mapInstance.setLayoutProperty(`${obj.floor}-layer-outline`, "visibility", leyerVisibility);
-      mapInstance.setLayoutProperty(`${obj.floor}-layer-hover`, "visibility", leyerVisibility);
-      mapInstance.setLayoutProperty(`${obj.floor}-layer-border-hover`, "visibility", leyerVisibility);
+      // mapInstance.setLayoutProperty(`${obj.floor}-layer-hover`, "visibility", leyerVisibility);
+      // mapInstance.setLayoutProperty(`${obj.floor}-layer-border-hover`, "visibility", leyerVisibility);
     });
 
   }
@@ -1977,22 +1977,20 @@ const Requests = () => {
       type: "vector",
       url: "mapbox://alexmahnke.8jvpmyng",
     });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "eh-first-floor-layer",
-        type: "fill",
-        source: "eh-first-floor-source",
-        "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
-        paint: {
-          // 'fill-outline-color': '#0066ff',
-          // 'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
+
+    // mapInstance.addLayer(
+    //   {
+    //     id: "eh-first-floor-layer",
+    //     type: "fill",
+    //     source: "eh-first-floor-source",
+    //     "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+    //     paint: {
+    //       "fill-opacity": 0,
+    //     },
+    //     "paint.tilted": {},
+    //   },
+    //   "water"
+    // );
 
     mapInstance.addLayer({
       id: "eh-first-floor-layer-outline",
@@ -2005,78 +2003,78 @@ const Requests = () => {
       },
     });
 
-    mapInstance.addLayer({
-      id: "eh-first-floor-layer-hover",
-      type: "fill",
-      source: "eh-first-floor-source",
-      "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
+    // mapInstance.addLayer({
+    //   id: "eh-first-floor-layer-hover",
+    //   type: "fill",
+    //   source: "eh-first-floor-source",
+    //   "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+    //   layout: {},
+    //   paint: {
+    //     "fill-outline-color": "#ff0000",
+    //     "fill-color": "#ffffff",
+    //     "fill-opacity": 0.5,
+    //   },
+    //   filter: ["==", "ParcelNo_", ""],
+    // });
 
-    mapInstance.addLayer({
-      id: "eh-first-floor-layer-border-hover",
-      type: "line",
-      source: "eh-first-floor-source",
-      "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
+    // mapInstance.addLayer({
+    //   id: "eh-first-floor-layer-border-hover",
+    //   type: "line",
+    //   source: "eh-first-floor-source",
+    //   "source-layer": "Eng-Hall-1st_Floor-2f2oo4",
+    //   paint: {
+    //     "line-color": "#ffffff",
+    //     "line-width": 4,
+    //   },
+    //   filter: ["==", "ParcelNo_", ""],
+    // });
 
-    mapInstance.on("click", "eh-first-floor-layer", function (e) {
+    // mapInstance.on("click", "eh-first-floor-layer", function (e) {
 
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-      // new mapboxgl.Popup()
-      // .setLngLat(coordinates)
-      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
-      // .addTo(mapInstance);
-    });
+    //   var features = e.features[0];
+    //   var props = features.properties;
+    //   var coordinates = features.geometry.coordinates;
+    //   // new mapboxgl.Popup()
+    //   // .setLngLat(coordinates)
+    //   // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
+    //   // .addTo(mapInstance);
+    // });
 
-    mapInstance.on("mousemove", "eh-first-floor-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("eh-first-floor-layer-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
+    // mapInstance.on("mousemove", "eh-first-floor-layer", (e) => {
+    //   var features = e.features;
+    //   // Single out the first found feature.
+    //   var ft = features[0];
+    //   var showTooltip = ft && ft.properties;
+    //   //  Add features that share the same PARCEL_TYP to the hover layer.
+    //   if (showTooltip) {
+    //     mapInstance.setFilter("eh-first-floor-layer-hover", [
+    //       "in",
+    //       "ParcelNo_",
+    //       ft.properties.ParcelNo_,
+    //     ]);
 
-        mapInstance.setFilter("eh-first-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
-      } else {
-        mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
-        mapInstance.setFilter("eh-first-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "eh-first-floor-layer", function () {
-      mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
-      mapInstance.setFilter("eh-first-floor-layer-border-hover", [
-        "in",
-        "ParcelNo_",
-        "",
-      ]);
-    });
+    //     mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+    //       "in",
+    //       "ParcelNo_",
+    //       ft.properties.ParcelNo_,
+    //     ]);
+    //   } else {
+    //     mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
+    //     mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+    //       "in",
+    //       "ParcelNo_",
+    //       "",
+    //     ]);
+    //   }
+    // });
+    // mapInstance.on("mouseleave", "eh-first-floor-layer", function () {
+    //   mapInstance.setFilter("eh-first-floor-layer-hover", ["in", "ParcelNo_", ""]);
+    //   mapInstance.setFilter("eh-first-floor-layer-border-hover", [
+    //     "in",
+    //     "ParcelNo_",
+    //     "",
+    //   ]);
+    // });
   }
 
   const loadEngineeringHallsSecondFloor = mapInstance => {
@@ -2086,22 +2084,7 @@ const Requests = () => {
       type: "vector",
       url: "mapbox://alexmahnke.dp86bu0m",
     });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "eh-second-floor-layer",
-        type: "fill",
-        source: "eh-second-floor-source",
-        "source-layer": "Eng-hall-2nd_Floor-2z2901",
-        paint: {
-          // 'fill-outline-color': '#0066ff',
-          // 'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
+
 
     mapInstance.addLayer({
       id: "eh-second-floor-layer-outline",
@@ -2113,79 +2096,6 @@ const Requests = () => {
         "line-width": 1,
       },
     });
-
-    mapInstance.addLayer({
-      id: "eh-second-floor-layer-hover",
-      type: "fill",
-      source: "eh-second-floor-source",
-      "source-layer": "Eng-hall-2nd_Floor-2z2901",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "eh-second-floor-layer-border-hover",
-      type: "line",
-      source: "eh-second-floor-source",
-      "source-layer": "Eng-hall-2nd_Floor-2z2901",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
-
-    mapInstance.on("click", "eh-second-floor-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-      // new mapboxgl.Popup()
-      // .setLngLat(coordinates)
-      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
-      // .addTo(mapInstance);
-    });
-
-    mapInstance.on("mousemove", "eh-second-floor-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("eh-second-floor-layer-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
-
-        mapInstance.setFilter("eh-second-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
-      } else {
-        mapInstance.setFilter("eh-second-floor-layer-hover", ["in", "ParcelNo_", ""]);
-        mapInstance.setFilter("eh-second-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "eh-second-floor-layer", function () {
-      mapInstance.setFilter("eh-second-floor-layer-hover", ["in", "ParcelNo_", ""]);
-      mapInstance.setFilter("eh-second-floor-layer-border-hover", [
-        "in",
-        "ParcelNo_",
-        "",
-      ]);
-    });
   }
 
   const loadEngineeringHallsThirdFloor = mapInstance => {
@@ -2195,22 +2105,6 @@ const Requests = () => {
       type: "vector",
       url: "mapbox://alexmahnke.2o423zbr",
     });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "eh-third-floor-layer",
-        type: "fill",
-        source: "eh-third-floor-source",
-        "source-layer": "Eng-Hall-3rd_Floor-cco71i",
-        paint: {
-          // 'fill-outline-color': '#0066ff',
-          // 'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
 
     mapInstance.addLayer({
       id: "eh-third-floor-layer-outline",
@@ -2223,78 +2117,6 @@ const Requests = () => {
       },
     });
 
-    mapInstance.addLayer({
-      id: "eh-third-floor-layer-hover",
-      type: "fill",
-      source: "eh-third-floor-source",
-      "source-layer": "Eng-Hall-3rd_Floor-cco71i",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "eh-third-floor-layer-border-hover",
-      type: "line",
-      source: "eh-third-floor-source",
-      "source-layer": "Eng-Hall-3rd_Floor-cco71i",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "ParcelNo_", ""],
-    });
-
-    mapInstance.on("click", "eh-third-floor-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-      // new mapboxgl.Popup()
-      // .setLngLat(coordinates)
-      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
-      // .addTo(mapInstance);
-    });
-
-    mapInstance.on("mousemove", "eh-third-floor-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("eh-third-floor-layer-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
-
-        mapInstance.setFilter("eh-third-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          ft.properties.ParcelNo_,
-        ]);
-      } else {
-        mapInstance.setFilter("eh-third-floor-layer-hover", ["in", "ParcelNo_", ""]);
-        mapInstance.setFilter("eh-third-floor-layer-border-hover", [
-          "in",
-          "ParcelNo_",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "eh-third-floor-layer", function () {
-      mapInstance.setFilter("eh-third-floor-layer-hover", ["in", "ParcelNo_", ""]);
-      mapInstance.setFilter("eh-third-floor-layer-border-hover", [
-        "in",
-        "ParcelNo_",
-        "",
-      ]);
-    });
   }
 
   const loadEngineeringHallsSourcesAndLayers = mapInstance => {
@@ -2733,7 +2555,7 @@ const Requests = () => {
         </div>
 
         <div className="pb-2 pt-3">
-          <div class="d-flex justify-content-between">
+          <div className="d-flex justify-content-between">
             <div className="d-inline">
               Building<span className="text-danger">*</span>
             </div>
@@ -2741,7 +2563,7 @@ const Requests = () => {
               Floor<span className="text-danger">*</span>
             </div>
           </div>
-          <div class="d-flex justify-content-between">
+          <div className="d-flex justify-content-between">
             <div className="d-inline building-text">University Hall</div>
             <div className="text-center pr-3 building-text">3</div>
           </div>
