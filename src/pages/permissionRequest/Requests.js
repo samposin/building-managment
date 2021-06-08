@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import buildings from "./buildings";
+import buildingsData from "./buildingsData";
 import RequestItem from "../../components/permRequestUtils/RequestItem";
 import AccessRequestModal from "../../pages/permissionRequest/AccessRequestModal";
 import RequestDetailsModal from "./RequestDetailsModal";
@@ -68,6 +69,8 @@ const Requests = () => {
   const [viewHistory, setViewHistory] = useState(false);
   const [lngLat, setLngLat] = useState({ lng: -89.40864500185694, lat: 43.071436442382236 });
 
+
+  const [buildingClickedOn, setBuildingClickedOn] = useState({});
 
   const [selectedType, setSelectedType] = useState("Interior Private");
   const [deviceType, setDeviceType] = useState("");
@@ -720,62 +723,83 @@ const Requests = () => {
 
     // // When a click event occurs on a feature in the places layer, open a popup at the
     // // location of the feature, with description HTML from its properties.
-    // mapInstance.on("click", "places", function (e) {
-    //   var features = e.features[0];
-    //   if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
-    //     mapInstance.removeLayer("selectedBuilding");
-    //     mapInstance.removeSource("selectedBuilding");
-    //   }
+    mapInstance.on("click", "places", function (e) {
+      var lngLat = e.lngLat;
+      var features = e.features[0];
+      var props = features.properties;
+      buildingsData.map((obj) => {
+          if(props.name === obj.building_name){
+              setBuildingClickedOn(obj);
+              mapInstance.flyTo({
+                center: [lngLat.lng, lngLat.lat],
+                zoom: 18.5,
+                bearing: 0,
+                speed: 0.8, // make the flying slow
+                curve: 1, // change the speed at which it zooms out
+                easing: function (t) {
+                return t;
+                },
+                essential: true
+                });
+          }
+      });
 
-    //   mapInstance.addSource("selectedBuilding", {
-    //     type: "geojson",
-    //     data: features.toJSON(),
-    //   });
-    //   mapInstance.addLayer({
-    //     id: "selectedBuilding",
-    //     type: "fill",
-    //     source: "selectedBuilding",
-    //     layout: {},
-    //     paint: {
-    //       "fill-outline-color": "#1F2C40",
-    //       "fill-color": "#178fed",
-    //     },
-    //   });
+      // if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
+      //   mapInstance.removeLayer("selectedBuilding");
+      //   mapInstance.removeSource("selectedBuilding");
+      // }
 
-    //   var popup =
-    //     '<div class="leaflet-popup  leaflet-zoom-animated" ><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 311px;"><div class="content-wrapper clearfix">' +
-    //     '<div class="popup-row">' +
-    //     '<div class="popup-col mo-img">' +
-    //     '<img src="https://map.wisc.edu/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBckFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--352c73a8c42905f2c6e0148f641c94f1e84e9dc1/Muir_Woods.jpg" alt="" data-modal-link="/api/v1/map_objects/552.html" class="thumbnail">' +
-    //     "</div>" +
-    //     '<div class="popup-col">' +
-    //     "<h3>" +
-    //     e.features[0].properties.name +
-    //     "</h3><p></p></div></div>" +
-    //     '<p class="align-right">' +
-    //     '<a href="#" data-modal-link="/api/v1/map_objects/552.html" class="more_link" tabindex="1">' +
-    //     "More " +
-    //     '<svg aria-hidden="true" id="uw-symbol-more" viewBox="0,0,1792,1792">' +
-    //     "<title>More</title>" +
-    //     '<path d="M979 960q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23zm384 0q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23z"></path>' +
-    //     "</svg>" +
-    //     "</a>" +
-    //     "</p>" +
-    //     '</div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>';
-    //   new mapboxgl.Popup()
-    //     .setLngLat(e.lngLat)
-    //     .setHTML(popup)
-    //     .addTo(mapInstance);
+      // mapInstance.addSource("selectedBuilding", {
+      //   type: "geojson",
+      //   data: features.toJSON(),
+      // });
+      // mapInstance.addLayer({
+      //   id: "selectedBuilding",
+      //   type: "fill",
+      //   source: "selectedBuilding",
+      //   layout: {},
+      //   paint: {
+      //     "fill-outline-color": "#1F2C40",
+      //     "fill-color": "#178fed",
+      //   },
+      // });
 
-    //   // Change the cursor to a pointer when the mouse is over the places layer.
-    //   mapInstance.on("mouseenter", "places", function () {
-    //     mapInstance.getCanvas().style.cursor = "pointer";
-    //   });
+      // var popup =
+      //   '<div class="leaflet-popup  leaflet-zoom-animated" ><div class="leaflet-popup-content-wrapper"><div class="leaflet-popup-content" style="width: 311px;"><div class="content-wrapper clearfix">' +
+      //   '<div class="popup-row">' +
+      //   '<div class="popup-col mo-img">' +
+      //   '<img src="https://map.wisc.edu/rails/active_storage/blobs/eyJfcmFpbHMiOnsibWVzc2FnZSI6IkJBaHBBckFDIiwiZXhwIjpudWxsLCJwdXIiOiJibG9iX2lkIn19--352c73a8c42905f2c6e0148f641c94f1e84e9dc1/Muir_Woods.jpg" alt="" data-modal-link="/api/v1/map_objects/552.html" class="thumbnail">' +
+      //   "</div>" +
+      //   '<div class="popup-col">' +
+      //   "<h3>" +
+      //   e.features[0].properties.name +
+      //   "</h3><p></p></div></div>" +
+      //   '<p class="align-right">' +
+      //   '<a href="#" data-modal-link="/api/v1/map_objects/552.html" class="more_link" tabindex="1">' +
+      //   "More " +
+      //   '<svg aria-hidden="true" id="uw-symbol-more" viewBox="0,0,1792,1792">' +
+      //   "<title>More</title>" +
+      //   '<path d="M979 960q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23zm384 0q0 13-10 23l-466 466q-10 10-23 10t-23-10l-50-50q-10-10-10-23t10-23l393-393-393-393q-10-10-10-23t10-23l50-50q10-10 23-10t23 10l466 466q10 10 10 23z"></path>' +
+      //   "</svg>" +
+      //   "</a>" +
+      //   "</p>" +
+      //   '</div></div></div><div class="leaflet-popup-tip-container"><div class="leaflet-popup-tip"></div></div></div>';
+      // new mapboxgl.Popup()
+      //   .setLngLat(e.lngLat)
+      //   .setHTML(popup)
+      //   .addTo(mapInstance);
 
-    //   // Change it back to a pointer when it leaves.
-    //   mapInstance.on("mouseleave", "places", function () {
-    //     mapInstance.getCanvas().style.cursor = "";
-    //   });
+
+    });
+
+    // // Change the cursor to a pointer when the mouse is over the places layer.
+    // mapInstance.on("mouseenter", "places", function () {
+    //   mapInstance.getCanvas().style.cursor = "pointer";
+    // });
+
+    // // Change it back to a pointer when it leaves.
+    // mapInstance.on("mouseleave", "places", function () {
+    //   mapInstance.getCanvas().style.cursor = "";
     // });
   };
 
@@ -788,7 +812,7 @@ const Requests = () => {
     });
     setEngineeringHallFloorArray(engineeringHallFloorArrayUpdated);
     hideEngineeringHallFloorSourcesAndLayers(mapObj, floorClicked);
-  }
+  }    
 
   const hideEngineeringHallFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
 
@@ -808,7 +832,6 @@ const Requests = () => {
   }
 
   const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
-
     var leyerVisibility;
 
     if(!mapInstance.getSource("first-floor-border-area-source")) return;
@@ -847,6 +870,43 @@ const Requests = () => {
       // mapInstance.setLayoutProperty("building-labels", "visibility", leyerVisibility);
   }
 
+  const renderSourceAndLayer1 = (currentNumber) => {
+    setBuildingClickedOn({ ...buildingClickedOn, active: parseInt(currentNumber) });
+
+    hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+    hideFloorSourcesAndLayers(mapObj, "hide-all");
+    switch (buildingClickedOn.building_name) {
+      case "Wendt Library":
+        hideAndShowPlacesSourcesAndLayers(mapObj, "visible");
+        addRasterImageSourceAndLayerFirstFloor(mapObj);
+        firstFloorAreaSourceAndLayers(mapObj);
+
+        addRasterImageSourceAndLayerThirdFloor(mapObj);
+        thirdFloorAreaSourceAndLayers(mapObj);
+
+        addRasterImageSourceAndLayerFourthFloor(mapObj);
+        fourthFloorAreaSourceAndLayers(mapObj);
+
+        addRasterImageSourceAndLayerSecondFloor(mapObj);
+        hiddenAreaSourceAndLayers(mapObj);
+        renderSourceAndLayer("second-floor");
+        break;
+    
+      default:
+        loadUniversityGroundSourceAndLayer(mapObj);
+        loadEngineeringHallsSourcesAndLayers(mapObj);
+        loadBodgery(mapObj);
+        if( parseInt(currentNumber) === 1)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-first-floor");
+        if( parseInt(currentNumber) === 2)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-second-floor");
+        if( parseInt(currentNumber) === 3)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-third-floor");
+        break;
+    }
+
+  }
+
   const renderSourceAndLayer = (floorClicked, indexNumber) => {
     let floorArrayUpdated = floorArray.map((obj, index) => {
         if(index === indexNumber)
@@ -855,18 +915,6 @@ const Requests = () => {
     });
     setFloorArray(floorArrayUpdated);
     hideFloorSourcesAndLayers(mapObj, floorClicked);
-    // if(floorClicked === 'first-floor'){
-    //   firstFloorAreaSourceAndLayers(mapObj);
-    // }
-    // if(floorClicked === 'second-floor'){
-    //   hiddenAreaSourceAndLayers(mapObj);
-    // }
-    // if(floorClicked === 'third-floor'){
-    //   thirdFloorAreaSourceAndLayers(mapObj);
-    // }
-    // if(floorClicked === 'fourth-floor'){
-    //   fourthFloorAreaSourceAndLayers(mapObj);
-    // }
   }
   const fourthFloorAreaSourceAndLayers = (mapInstance) => {
     // border layer working properly
@@ -1957,6 +2005,7 @@ const Requests = () => {
   }
 
   const loadUniversityGroundSourceAndLayer = (mapInstance) => {
+    if (mapInstance.getSource("ug-source")) return;
     mapInstance.addSource("ug-source", {
       type: "vector",
       url: "mapbox://alexmahnke.0foqppfl",
@@ -2132,7 +2181,7 @@ const Requests = () => {
   }
 
   const loadBodgery = mapInstance => {
-    // if (mapInstance.getSource("bodgery-source")) return;
+    if (mapInstance.getSource("bodgery-1-source")) return;
 
     mapInstance.addSource("bodgery-1-source", {
       type: "vector",
@@ -2215,20 +2264,21 @@ const Requests = () => {
 
         if (currentZoom >= 18) {
           // removePlacesSourceAndLeyers(map);
-          hideAndShowPlacesSourcesAndLayers(map, "visible");
 
-          addRasterImageSourceAndLayerFirstFloor(map);
-          firstFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerThirdFloor(map);
-          thirdFloorAreaSourceAndLayers(map);
+          // hideAndShowPlacesSourcesAndLayers(map, "visible");
+          // addRasterImageSourceAndLayerFirstFloor(map);
+          // firstFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerFourthFloor(map);
-          fourthFloorAreaSourceAndLayers(map);
+          // addRasterImageSourceAndLayerThirdFloor(map);
+          // thirdFloorAreaSourceAndLayers(map);
 
-          addRasterImageSourceAndLayerSecondFloor(map);
-          hiddenAreaSourceAndLayers(map);
-          renderSourceAndLayer("second-floor");
+          // addRasterImageSourceAndLayerFourthFloor(map);
+          // fourthFloorAreaSourceAndLayers(map);
+
+          // addRasterImageSourceAndLayerSecondFloor(map);
+          // hiddenAreaSourceAndLayers(map);
+          // renderSourceAndLayer("second-floor");
           var flc_el = document.getElementById("floor-list-container");
           if (flc_el) {
             if (!flc_el.classList.contains("show")) {
@@ -2452,6 +2502,26 @@ const Requests = () => {
           </Modal.Body>
         </Modal>
       </>
+  }
+
+
+  const floorList = _ => {
+    if( Object.keys(buildingClickedOn).length === 0 )
+    return "";
+
+    var numberOfFloor = [...Array( parseInt(buildingClickedOn.no_of_floor) ).keys()];
+
+    var row = numberOfFloor.map( (obj, i) => {
+      return <li
+      key={i + 1}
+      className={`floor-list-number ${buildingClickedOn.active === i + 1  && "active"}`}
+      onClick={ () => renderSourceAndLayer1(i + 1) }
+    >
+      <span>{i + 1}</span>
+    </li>
+    });
+    return row;
+
   }
 
   return (
@@ -2840,7 +2910,7 @@ const Requests = () => {
       >
         <div className="p-2">Floor</div>
         <ul>
-          {floorArray.map((obj, index) => {
+          {/* {floorArray.map((obj, index) => {
             return (
               <li
                 key={index + 1}
@@ -2850,7 +2920,9 @@ const Requests = () => {
                 <span>{index + 1}</span>
               </li>
             );
-          })}
+          })} */}
+
+          { floorList() }
         </ul>
       </div>
 
