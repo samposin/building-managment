@@ -730,17 +730,31 @@ const Requests = () => {
       buildingsData.map((obj) => {
           if(props.name === obj.building_name){
               setBuildingClickedOn(obj);
-              mapInstance.flyTo({
-                center: [lngLat.lng, lngLat.lat],
-                zoom: 18.5,
-                bearing: 0,
-                speed: 0.8, // make the flying slow
-                curve: 1, // change the speed at which it zooms out
-                easing: function (t) {
-                return t;
-                },
-                essential: true
+              hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+              hideFloorSourcesAndLayers(mapObj, "hide-all");
+              if( mapInstance.getZoom() < 18 ){
+                mapInstance.flyTo({
+                  center: [lngLat.lng, lngLat.lat],
+                  zoom: 18.5,
+                  bearing: 0,
+                  speed: 0.8, // make the flying slow
+                  curve: 1, // change the speed at which it zooms out
+                  easing: function (t) {
+                  return t;
+                  },
+                  essential: true
                 });
+              }else{
+                mapInstance.flyTo({
+                  center: [lngLat.lng, lngLat.lat],
+                  speed: 0.8, // make the flying slow
+                  curve: 1, // change the speed at which it zooms out
+                  easing: function (t) {
+                  return t;
+                  },
+                  essential: true
+                });
+              }
           }
       });
 
@@ -890,12 +904,21 @@ const Requests = () => {
         addRasterImageSourceAndLayerSecondFloor(mapObj);
         hiddenAreaSourceAndLayers(mapObj);
         renderSourceAndLayer("second-floor");
+        if( parseInt(currentNumber) === 1)
+        renderSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 2)
+        renderSourceAndLayer("second-floor");
+        if( parseInt(currentNumber) === 3)
+        renderSourceAndLayer("third-floor");
+        if( parseInt(currentNumber) === 4)
+        renderSourceAndLayer("fourth-floor");
         break;
     
       default:
         loadUniversityGroundSourceAndLayer(mapObj);
         loadEngineeringHallsSourcesAndLayers(mapObj);
         loadBodgery(mapObj);
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-first-floor");
         if( parseInt(currentNumber) === 1)
         hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-first-floor");
         if( parseInt(currentNumber) === 2)
