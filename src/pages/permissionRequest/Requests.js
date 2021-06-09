@@ -696,6 +696,8 @@ const Requests = () => {
       "type": "fill",
       "source": "places",
       "source-layer": "all_buildings-27vwin",
+      "minzoom": 16,
+      "maxzoom": 18,
       "layout": {},
       "paint": {
         "fill-color": "#1F2C40", // blue color fill
@@ -1883,6 +1885,12 @@ const Requests = () => {
   
           labelLayerId
         );
+        map.on("click", "add-3d-buildings", function (e) {
+          // var lngLat = e.lngLat;
+          var features = e.features[0];
+          var props = features.properties;
+          console.log(features);
+        });
   }
 
   const addRasterImageSourceAndLayerThirdFloor = (mapInstance) => {
