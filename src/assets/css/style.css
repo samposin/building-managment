@@ -3213,3 +3213,8 @@ img {
 .icon-locked{ background:url("../icons/svg/icon-locked.svg") no-repeat center top / 80%; }	
 .icon-open-door{ background:url("../icons/svg/icon-open-door.svg") no-repeat center top / 80%; }
 .icon-unlocked{ background:url("../icons/svg/icon-unlocked.svg") no-repeat center top / 80%; }
+
+
+.modal-bg-black .modal-content {
+  background-color:#2a2f37;
+}

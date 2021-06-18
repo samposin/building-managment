@@ -1,11 +1,13 @@
 {
   "name": "buildings-app",
   "version": "0.1.0",
+  "homepage": "http://18.117.228.235/",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.11.4",
     "@testing-library/react": "^11.1.0",
     "@testing-library/user-event": "^12.1.10",
+    "axios": "^0.21.1",
     "bootstrap": "^4.6.0",
     "google-spreadsheet": "^3.1.15",
     "mapbox-gl": "^2.2.0",

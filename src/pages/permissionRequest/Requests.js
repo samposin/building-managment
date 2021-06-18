@@ -8,6 +8,7 @@ import RequestDetailsModal from "./RequestDetailsModal";
 import Modal from "react-bootstrap/Modal";
 import { useToasts } from "react-toast-notifications";
 import InputRadio from '../../components/input_radio';
+import axios from 'axios';
 
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import config from "../../config";
@@ -62,7 +63,7 @@ const Requests = () => {
   const [engineeringHallFloorArray, setEngineeringHallFloorArray] = useState([{floor:'eh-first-floor', active: false}, {floor:'eh-second-floor', active: false}, {floor:'eh-third-floor', active: false}]);
 
   const [pitch, setPitch] = useState(0);
-  const [zoom, setZoom] = useState(15);
+  const [zoom, setZoom] = useState(12);
   const [center, setCenter] = useState([-89.41068, 43.07561]);
   const [bearing, setBearing] = useState(0);
   const [viewIn3d, setViewIn3d] = useState(false);
@@ -701,7 +702,8 @@ const Requests = () => {
       "layout": {},
       "paint": {
         "fill-color": "#1F2C40", // blue color fill
-        "fill-outline-color": "#1daefc",
+        // "fill-outline-color": "#1daefc",
+        "fill-opacity": 0
       },
     });
 
@@ -729,36 +731,36 @@ const Requests = () => {
       var lngLat = e.lngLat;
       var features = e.features[0];
       var props = features.properties;
-      buildingsData.map((obj) => {
-          if(props.name === obj.building_name){
-              setBuildingClickedOn(obj);
-              hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
-              hideFloorSourcesAndLayers(mapObj, "hide-all");
-              if( mapInstance.getZoom() < 18 ){
-                mapInstance.flyTo({
-                  center: [lngLat.lng, lngLat.lat],
-                  zoom: 18.5,
-                  bearing: 0,
-                  speed: 0.8, // make the flying slow
-                  curve: 1, // change the speed at which it zooms out
-                  easing: function (t) {
-                  return t;
-                  },
-                  essential: true
-                });
-              }else{
-                mapInstance.flyTo({
-                  center: [lngLat.lng, lngLat.lat],
-                  speed: 0.8, // make the flying slow
-                  curve: 1, // change the speed at which it zooms out
-                  easing: function (t) {
-                  return t;
-                  },
-                  essential: true
-                });
-              }
-          }
-      });
+      // buildingsData.map((obj) => {
+      //     if(props.name === obj.building_name){
+      //         setBuildingClickedOn(obj);
+      //         hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+      //         hideFloorSourcesAndLayers(mapObj, "hide-all");
+      //         if( mapInstance.getZoom() < 18 ){
+      //           mapInstance.flyTo({
+      //             center: [lngLat.lng, lngLat.lat],
+      //             zoom: 18.5,
+      //             bearing: 0,
+      //             speed: 0.8, // make the flying slow
+      //             curve: 1, // change the speed at which it zooms out
+      //             easing: function (t) {
+      //             return t;
+      //             },
+      //             essential: true
+      //           });
+      //         }else{
+      //           mapInstance.flyTo({
+      //             center: [lngLat.lng, lngLat.lat],
+      //             speed: 0.8, // make the flying slow
+      //             curve: 1, // change the speed at which it zooms out
+      //             easing: function (t) {
+      //             return t;
+      //             },
+      //             essential: true
+      //           });
+      //         }
+      //     }
+      // });
 
       // if (typeof mapInstance.getLayer("selectedBuilding") !== "undefined") {
       //   mapInstance.removeLayer("selectedBuilding");
@@ -1797,16 +1799,23 @@ const Requests = () => {
 
   const toggleView = () => {
     setViewIn3d(!viewIn3d);
+    var currentCenter = mapObj.getCenter().wrap();
+    var centerOflng = currentCenter.lng;
+    var centerOflat = currentCenter.lat;
+    setZoom(18.5);
+    setCenter([centerOflng, centerOflat]);
+    // set 3d
     if (!viewIn3d) {
-      setZoom(19);
-      setCenter([-89.355726877, 43.10844619]);
+   
+     // setCenter([-89.355726877, 43.10844619]);
       setPitch(45);
-      setBearing(-89);
+      // setBearing(-89);
+      // set 2d 
     } else {
-      setZoom(15);
-      setCenter([-89.41068, 43.07561]);
+      
+      // setCenter([-89.41068, 43.07561]);
       setPitch(0);
-      setBearing(0);
+      // setBearing(0);
     }
   };
   const addRasterImageSourceAndLayerSecondFloor = (mapInstance) => {
@@ -1885,11 +1894,51 @@ const Requests = () => {
   
           labelLayerId
         );
-        map.on("click", "add-3d-buildings", function (e) {
+        map.on("click", "add-3d-buildings", async function (e) {
           // var lngLat = e.lngLat;
           var features = e.features[0];
           var props = features.properties;
-          console.log(features);
+          var lngLat = e.lngLat;
+          // console.log(features);
+          
+          var tileQuery = 'https://api.mapbox.com/v4/alexmahnke.0ywvbtoi/tilequery/' + lngLat.lng + ","+ lngLat.lat + '.json?radius=5&limit=1&geometry=polygon&dedupe&access_token=pk.eyJ1IjoiYWxleG1haG5rZSIsImEiOiJja25oc3psc2cwbWd2MnZudzA1d2dpOW5wIn0.w7LO2v86HxcaZUPdkmFk7g';
+          const res = await axios.get(`${tileQuery}`);
+          
+          if(res.status === 200){
+              if(res.data.features[0].properties === !undefined)
+                  return;
+              var placeName = res.data.features[0].properties.name;
+              buildingsData.map((obj) => {
+                if( placeName === obj.building_name){
+                    setBuildingClickedOn(obj);
+                    hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+                    hideFloorSourcesAndLayers(mapObj, "hide-all");
+                    if( mapObj.getZoom() < 18 ){
+                      mapObj.flyTo({
+                        center: [lngLat.lng, lngLat.lat],
+                        zoom: 18.5,
+                        bearing: 0,
+                        speed: 0.8, // make the flying slow
+                        curve: 1, // change the speed at which it zooms out
+                        easing: function (t) {
+                        return t;
+                        },
+                        essential: true
+                      });
+                    }else{
+                      mapObj.flyTo({
+                        center: [lngLat.lng, lngLat.lat],
+                        speed: 0.8, // make the flying slow
+                        curve: 1, // change the speed at which it zooms out
+                        easing: function (t) {
+                        return t;
+                        },
+                        essential: true
+                      });
+                    }
+                }
+            });
+          }
         });
   }
 
@@ -2279,6 +2328,7 @@ const Requests = () => {
       style: "mapbox://styles/alexmahnke/cko04gqw62spj17pjon947pwz",
       center: center,
       zoom: zoom,
+      minZoom: 12,
       pitch: pitch,
       antialias: true,
       bearing: bearing,
@@ -2521,7 +2571,7 @@ const Requests = () => {
 
   const cameraModal = () => {
       return <>  
-        <Modal show={showCameraModal} onHide={toggleCameraView} className="mt-5">
+        <Modal show={showCameraModal} onHide={toggleCameraView} className="mt-5 modal-bg-black">
           <Modal.Header closeButton>
             {/* <Modal.Title>Modal heading</Modal.Title> */}
           </Modal.Header>
