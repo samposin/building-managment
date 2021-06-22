@@ -58,25 +58,26 @@ const Requests = () => {
   const [showRequestDetailsModal, setShowRequestDetailsModal] = useState(false);
 
   const [showLockDown, setShowLockDown] = useState(false);
+
+  // const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}]);
+  const [floorArray, setFloorArray] = useState([
+    { name: 'Wendt', floor:'first-floor', layer_name: 'Wendt_Floor_1-2se8nk', layer_id: 'alexmahnke.2v5kaa45', active: false },
+    { name: 'Wendt', floor:'second-floor', layer_name: 'Wendt_Floor_2-br0f6m', layer_id: 'alexmahnke.050dg8h6', active: false },
+    { name: 'Wendt', floor:'third-floor', layer_name: 'Wendt_Floor_3-4ymutc', layer_id: 'alexmahnke.3vnm4k9l', active: false },
+    { name: 'Wendt', floor:'fourth-floor', layer_name: 'Wendt_Floor_4-4nzvaw', layer_id: 'alexmahnke.dbmm7lbu', active: false }
+  ]);
   
-  const [combineArrayFloor, setCombinedArrayFloor] = useState([
-    [
-      { name: 'Wendt Library', floor:'first-floor', layer_name: 'Wendt_Floor_1-2se8nk', layer_id: 'alexmahnke.2v5kaa45', active: false },
-      { name: 'Wendt Library', floor:'second-floor', layer_name: 'Wendt_Floor_2-br0f6m', layer_id: 'alexmahnke.050dg8h6', active: false },
-      { name: 'Wendt Library', floor:'third-floor', layer_name: 'Wendt_Floor_3-4ymutc', layer_id: 'alexmahnke.3vnm4k9l', active: false },
-      { name: 'Wendt Library', floor:'fourth-floor', layer_name: 'Wendt_Floor_4-4nzvaw', layer_id: 'alexmahnke.dbmm7lbu', active: false }
-    ],
-    [
-      { name: 'Merit Residence Hall', floor:'first-floor', layer_name: 'MRH-Boundary-66ms89', layer_id: 'alexmahnke.2dwsbx09', active: false },
-      { name: 'Merit Residence Hall', floor:'second-floor', layer_name: 'MRH-Floor_1-3esnl8', layer_id: 'alexmahnke.9h2dxj4n', active: false },
-      { name: 'Merit Residence Hall', floor:'third-floor', layer_name: 'MRH-Floor_2-2m91tf', layer_id: 'alexmahnke.a5ovliwf', active: false },
-      { name: 'Merit Residence Hall', floor:'fourth-floor', layer_name: 'MRH-Floor_3-339ky1', layer_id: 'alexmahnke.2ccsdcxv', active: false }
-    ], 
-    [
-      { name: 'Engineering Hall', floor:'eh-first-floor', layer_name:'Eng-Hall-1st_Floor-2f2oo4', layer_id:'alexmahnke.8jvpmyng', active: false },
-      { name: 'Engineering Hall', floor:'eh-second-floor', layer_name:'Eng-hall-2nd_Floor-2z2901', layer_id:'alexmahnke.dp86bu0m', active: false },
-      { name: 'Engineering Hall', floor:'eh-third-floor', layer_name:'Eng-Hall-3rd_Floor-cco71i', layer_id:'alexmahnke.2o423zbr', active: false }
-    ]
+  const [MRHFloor, setMRHFloor] = useState([
+    { name: 'MRH', floor:'first-floor', layer_name: 'MRH-Boundary-66ms89', layer_id: 'alexmahnke.2dwsbx09', active: false },
+    { name: 'MRH', floor:'second-floor', layer_name: 'MRH-Floor_1-3esnl8', layer_id: 'alexmahnke.9h2dxj4n', active: false },
+    { name: 'MRH', floor:'third-floor', layer_name: 'MRH-Floor_2-2m91tf', layer_id: 'alexmahnke.a5ovliwf', active: false },
+    { name: 'MRH', floor:'fourth-floor', layer_name: 'MRH-Floor_3-339ky1', layer_id: 'alexmahnke.2ccsdcxv', active: false }
+  ]);
+
+  const [engineeringHallFloorArray, setEngineeringHallFloorArray] = useState([
+    { name: 'eh', floor:'eh-first-floor', layer_name:'Eng-Hall-1st_Floor-2f2oo4', layer_id:'alexmahnke.8jvpmyng', active: false },
+    { name: 'eh', floor:'eh-second-floor', layer_name:'Eng-hall-2nd_Floor-2z2901', layer_id:'alexmahnke.dp86bu0m', active: false },
+    { name: 'eh', floor:'eh-third-floor', layer_name:'Eng-Hall-3rd_Floor-cco71i', layer_id:'alexmahnke.2o423zbr', active: false }
   ]);
   const [pitch, setPitch] = useState(0);
   const [zoom, setZoom] = useState(12);
@@ -86,7 +87,8 @@ const Requests = () => {
   const [viewHistory, setViewHistory] = useState(false);
   const [lngLat, setLngLat] = useState({ lng: -89.40864500185694, lat: 43.071436442382236 });
 
-  const [selectedBuilding, setselectedBuilding] = useState([]);
+
+  const [buildingClickedOn, setBuildingClickedOn] = useState({});
 
   const [selectedType, setSelectedType] = useState("Interior Private");
   const [deviceType, setDeviceType] = useState("");
@@ -838,6 +840,55 @@ const Requests = () => {
   };
 
 
+  const renderEngineeringHallSourceAndLayer = (floorClicked, indexNumber) => {
+    let engineeringHallFloorArrayUpdated = engineeringHallFloorArray.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
+    });
+    setEngineeringHallFloorArray(engineeringHallFloorArrayUpdated);
+    hideEngineeringHallFloorSourcesAndLayers(mapObj, floorClicked);
+  }    
+
+  const hideEngineeringHallFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
+
+    var leyerVisibility;
+
+    engineeringHallFloorArray.forEach( (obj) => {
+      leyerVisibility = 'none'
+      if(obj.floor === floorNotToHide){
+        leyerVisibility = 'visible'
+      }
+      mapInstance.setLayoutProperty(`${obj.name+'-'+obj.floor}-outline`, "visibility", leyerVisibility);
+    });
+
+  }
+
+  const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
+    var leyerVisibility;
+
+    floorArray.forEach( (obj, index) => {
+      leyerVisibility = 'none'
+      if(obj.floor === floorNotToHide){
+        leyerVisibility = 'visible'
+      }
+      mapInstance.setLayoutProperty(`${obj.name+'-'+obj.floor}-outline`, "visibility", leyerVisibility);
+    });
+  }
+
+  
+  const hideMRHFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
+    var leyerVisibility;
+
+    MRHFloor.forEach( (obj, index) => {
+      leyerVisibility = 'none'
+      if(obj.floor === floorNotToHide){
+        leyerVisibility = 'visible'
+      }
+      mapInstance.setLayoutProperty(`${obj.name+'-'+obj.floor}-outline`, "visibility", leyerVisibility);
+    });
+  }
+
   const hideAndShowPlacesSourcesAndLayers = (mapInstance, leyerVisibility) => {
     if(!mapInstance.getSource("places")) return;
       mapInstance.setLayoutProperty("places", "visibility", leyerVisibility);
@@ -845,32 +896,72 @@ const Requests = () => {
   }
 
   const renderSourceAndLayer1 = (currentNumber) => {
+    setBuildingClickedOn({ ...buildingClickedOn, active: parseInt(currentNumber) });
+    hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+    hideFloorSourcesAndLayers(mapObj, "hide-all");
+    hideMRHFloorSourcesAndLayers(mapObj, "hide-all");
+    hideAndShowPlacesSourcesAndLayers(mapObj, "visible");
+    switch (buildingClickedOn.building_name) {
+      case "Wendt Library":
+        renderSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 1)
+        renderSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 2)
+        renderSourceAndLayer("second-floor");
+        if( parseInt(currentNumber) === 3)
+        renderSourceAndLayer("third-floor");
+        if( parseInt(currentNumber) === 4)
+        renderSourceAndLayer("fourth-floor");
+        break;
+
+      case "Merit Residence Hall":
+        renderRMHSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 1)
+        renderRMHSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 2)
+        renderRMHSourceAndLayer("second-floor");
+        if( parseInt(currentNumber) === 3)
+        renderRMHSourceAndLayer("third-floor");
+        if( parseInt(currentNumber) === 4)
+        renderRMHSourceAndLayer("fourth-floor");
+      break;
     
-    var leyerVisibility;
-    var updateSelectedBuildingFloorStatus = selectedBuilding.map((obj, index) => {
-        if(index === currentNumber)
-        return { ...obj, active: true }
-        return { ...obj, active: false }
-    }); 
-    setselectedBuilding(updateSelectedBuildingFloorStatus);
-    for (let index = 0; index < combineArrayFloor.length; index++) {
-      var buildingElement = combineArrayFloor[index];
-      if(selectedBuilding[0].name === buildingElement[0].name){
-        buildingElement.map((obj, counter) => {
-          leyerVisibility = 'none';
-          if(counter === currentNumber){
-            leyerVisibility = 'visible'
-          }
-          mapObj.setLayoutProperty(`${index + '-' + obj.floor}-outline`, "visibility", leyerVisibility);
-        });
-      } else {
-        buildingElement.forEach( (obj) => {
-          leyerVisibility = 'none'
-          mapObj.setLayoutProperty(`${index + '-' + obj.floor}-outline`, "visibility", leyerVisibility);
-        });
-      }
+      default:
+        loadUniversityGroundSourceAndLayer(mapObj);
+        loadBodgery(mapObj);
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-first-floor");
+        if( parseInt(currentNumber) === 1)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-first-floor");
+        if( parseInt(currentNumber) === 2)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-second-floor");
+        if( parseInt(currentNumber) === 3)
+        hideEngineeringHallFloorSourcesAndLayers(mapObj, "eh-third-floor");
+        break;
     }
+
   }
+
+  const renderSourceAndLayer = (floorClicked, indexNumber) => {
+    let floorArrayUpdated = floorArray.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
+    });
+    setFloorArray(floorArrayUpdated);
+    hideFloorSourcesAndLayers(mapObj, floorClicked);
+  }
+
+  const renderRMHSourceAndLayer = (floorClicked, indexNumber) => {
+    let MRHFloorUpdated = MRHFloor.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
+    });
+    setMRHFloor(MRHFloorUpdated);
+    hideMRHFloorSourcesAndLayers(mapObj, floorClicked);
+  }
+
+
 
   const toggleView = () => {
     setViewIn3d(!viewIn3d);
@@ -960,11 +1051,12 @@ const Requests = () => {
               if(res.data.features[0].properties === !undefined)
                   return;
               var placeName = res.data.features[0].properties.name;
-              for (let index = 0; index < combineArrayFloor.length; index++) {
-                var buildingElement = combineArrayFloor[index];
-                buildingElement.map((obj) => {
-                  if( placeName === obj.name){
-                    setselectedBuilding(buildingElement);
+              buildingsData.map((obj) => {
+                if( placeName === obj.building_name){
+                    setBuildingClickedOn(obj);
+                    hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
+                    hideFloorSourcesAndLayers(mapObj, "hide-all");
+                    hideMRHFloorSourcesAndLayers(mapObj, "hide-all");
                     if( mapObj.getZoom() < 18 ){
                       mapObj.flyTo({
                         center: [lngLat.lng, lngLat.lat],
@@ -989,8 +1081,7 @@ const Requests = () => {
                       });
                     }
                 }
-                });
-              }
+            });
           }
         });
   }
@@ -1137,34 +1228,62 @@ const Requests = () => {
   }
 
   
-  const loadAllSourcesAndLayers = (mapInstance) => {
-    var currentElement;
-    for (let index = 0; index < combineArrayFloor.length; index++) {
-      currentElement = combineArrayFloor[index];
-      currentElement.map((obj) => {
-        if (mapInstance.getSource(`${index + "-" + obj.floor}-source`))
-          return;
-        mapInstance.addSource(`${index + "-" + obj.floor}-source`, {
-          type: "vector",
-          url: `mapbox://${obj.layer_id}`,
-        });
-        mapInstance.addLayer({
-          id: `${index + "-" + obj.floor}-outline`,
-          type: "line",
-          source: `${index + "-" + obj.floor}-source`,
-          "source-layer": `${obj.layer_name}`,
-          paint: {
-            "line-color": "#0066ff",
-            "line-width": 1,
-          },
-          layout: {
-            // make layer invisible by default
-            'visibility': 'none'
-          }
-        });
+  const loadAllSourcesAndLayers = mapInstance => {
+    floorArray.map((obj) => {
+      if (mapInstance.getSource(`${obj.name+'-'+obj.floor}-source`)) return;
+      mapInstance.addSource(`${obj.name+'-'+obj.floor}-source`, {
+        type: "vector",
+        url: `mapbox://${obj.layer_id}`,
       });
-    }
-  };
+      mapInstance.addLayer({
+        id: `${obj.name+'-'+obj.floor}-outline`,
+        type: "line",
+        source: `${obj.name+'-'+obj.floor}-source`,
+        "source-layer": `${obj.layer_name}`,
+        paint: {
+          "line-color": "#0066ff",
+          "line-width": 1,
+        },
+      });
+    });
+
+    MRHFloor.map((obj) => {
+      if (mapInstance.getSource(`${obj.name+'-'+obj.floor}-source`)) return;
+      mapInstance.addSource(`${obj.name+'-'+obj.floor}-source`, {
+        type: "vector",
+        url: `mapbox://${obj.layer_id}`,
+      });
+      mapInstance.addLayer({
+        id: `${obj.name+'-'+obj.floor}-outline`,
+        type: "line",
+        source: `${obj.name+'-'+obj.floor}-source`,
+        "source-layer": `${obj.layer_name}`,
+        paint: {
+          "line-color": "#0066ff",
+          "line-width": 1,
+        },
+      });
+    });
+
+    engineeringHallFloorArray.map((obj) => {
+      if (mapInstance.getSource(`${obj.name+'-'+obj.floor}-source`)) return;
+      mapInstance.addSource(`${obj.name+'-'+obj.floor}-source`, {
+        type: "vector",
+        url: `mapbox://${obj.layer_id}`,
+      });
+      mapInstance.addLayer({
+        id: `${obj.name+'-'+obj.floor}-outline`,
+        type: "line",
+        source: `${obj.name+'-'+obj.floor}-source`,
+        "source-layer": `${obj.layer_name}`,
+        paint: {
+          "line-color": "#0066ff",
+          "line-width": 1,
+        },
+      });
+    });
+
+  }
 
 
   useEffect(() => {
@@ -1196,6 +1315,12 @@ const Requests = () => {
 
       
       loadAllSourcesAndLayers(map);
+
+
+      // hidding all the visible layers 
+      hideEngineeringHallFloorSourcesAndLayers(map, "hide-all");
+      hideFloorSourcesAndLayers(map, "hide-all");
+      hideMRHFloorSourcesAndLayers(map, "hide-all");
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
@@ -1204,6 +1329,7 @@ const Requests = () => {
 
 
           hideAndShowPlacesSourcesAndLayers(map, "visible");
+          renderSourceAndLayer("second-floor");
           var flc_el = document.getElementById("floor-list-container");
           if (flc_el) {
             if (!flc_el.classList.contains("show")) {
@@ -1219,7 +1345,7 @@ const Requests = () => {
             }
           }
           // removeAllFloorsSourcesAndLayers(map);
-          // hideFloorSourcesAndLayers(map, "hide-all");
+          hideFloorSourcesAndLayers(map, "hide-all");
           loadGeoJsonPlacesSourcesAndLayers(map);
         }
       });
@@ -1426,6 +1552,26 @@ const Requests = () => {
           </Modal.Body>
         </Modal>
       </>
+  }
+
+
+  const floorList = _ => {
+    if( Object.keys(buildingClickedOn).length === 0 )
+    return "";
+
+    var numberOfFloor = [...Array( parseInt(buildingClickedOn.no_of_floor) ).keys()];
+
+    var row = numberOfFloor.map( (obj, i) => {
+      return <li
+      key={i + 1}
+      className={`floor-list-number ${buildingClickedOn.active === i + 1  && "active"}`}
+      onClick={ () => renderSourceAndLayer1(i + 1) }
+    >
+      <span>{i + 1}</span>
+    </li>
+    });
+    return row;
+
   }
 
   return (
@@ -1814,15 +1960,19 @@ const Requests = () => {
       >
         <div className="p-2">Floor</div>
         <ul>
-          { ( selectedBuilding.length > 0 ) && selectedBuilding.map((obj, i) => {
-          return <li
-                    key={i + 1}
-                    className={`floor-list-number ${obj.active === true && "active"}`}
-                    onClick={ () => renderSourceAndLayer1(i) }
-                  >
-                    <span>{i + 1}</span>
-                  </li>;
-          })}
+          {/* {floorArray.map((obj, index) => {
+            return (
+              <li
+                key={index + 1}
+                className={`floor-list-number ${obj.active && "active"}`}
+                onClick={() => renderSourceAndLayer(obj.floor, index)}
+              >
+                <span>{index + 1}</span>
+              </li>
+            );
+          })} */}
+
+          { floorList() }
         </ul>
       </div>
 
