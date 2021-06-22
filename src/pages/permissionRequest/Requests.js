@@ -59,9 +59,22 @@ const Requests = () => {
 
   const [showLockDown, setShowLockDown] = useState(false);
 
-  const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}]);
-  const [engineeringHallFloorArray, setEngineeringHallFloorArray] = useState([{floor:'eh-first-floor', active: false}, {floor:'eh-second-floor', active: false}, {floor:'eh-third-floor', active: false}]);
+  // const [floorArray, setFloorArray] = useState([{floor:'first-floor', active: false}, {floor:'second-floor', active: false}, {floor:'third-floor', active: false}, {floor:'fourth-floor', active: false}]);
+  const [floorArray, setFloorArray] = useState([
+    { name: 'Wendt', floor:'first-floor', layer_name: 'Wendt_Floor_1-2se8nk', layer_id: 'alexmahnke.2v5kaa45', active: false },
+    { name: 'Wendt', floor:'second-floor', layer_name: 'Wendt_Floor_2-br0f6m', layer_id: 'alexmahnke.050dg8h6', active: false },
+    { name: 'Wendt', floor:'third-floor', layer_name: 'Wendt_Floor_3-4ymutc', layer_id: 'alexmahnke.3vnm4k9l', active: false },
+    { name: 'Wendt', floor:'fourth-floor', layer_name: 'Wendt_Floor_4-4nzvaw', layer_id: 'alexmahnke.dbmm7lbu', active: false }
+  ]);
+  
+  const [MRHFloor, setMRHFloor] = useState([
+    { name: 'MRH', floor:'first-floor', layer_name: 'MRH-Boundary-66ms89', layer_id: 'alexmahnke.2dwsbx09', active: false },
+    { name: 'MRH', floor:'second-floor', layer_name: 'MRH-Floor_1-3esnl8', layer_id: 'alexmahnke.9h2dxj4n', active: false },
+    { name: 'MRH', floor:'third-floor', layer_name: 'MRH-Floor_2-2m91tf', layer_id: 'alexmahnke.a5ovliwf', active: false },
+    { name: 'MRH', floor:'fourth-floor', layer_name: 'MRH-Floor_3-339ky1', layer_id: 'alexmahnke.2ccsdcxv', active: false }
+  ]);
 
+  const [engineeringHallFloorArray, setEngineeringHallFloorArray] = useState([{floor:'eh-first-floor', active: false}, {floor:'eh-second-floor', active: false}, {floor:'eh-third-floor', active: false}]);
   const [pitch, setPitch] = useState(0);
   const [zoom, setZoom] = useState(12);
   const [center, setCenter] = useState([-89.41068, 43.07561]);
@@ -569,6 +582,7 @@ const Requests = () => {
 
   // change buildings color incase of lockdown
   const applyRedColor = () => {
+    if(!mapObj.getSource("places")) return;
     var lockdownBuildings = [];
     var features = mapObj.queryRenderedFeatures({ layers: ['places'] });
 
@@ -841,10 +855,7 @@ const Requests = () => {
       if(obj.floor === floorNotToHide){
         leyerVisibility = 'visible'
       }
-      // mapInstance.setLayoutProperty(`${obj.floor}-layer`, "visibility", leyerVisibility);
       mapInstance.setLayoutProperty(`${obj.floor}-layer-outline`, "visibility", leyerVisibility);
-      // mapInstance.setLayoutProperty(`${obj.floor}-layer-hover`, "visibility", leyerVisibility);
-      // mapInstance.setLayoutProperty(`${obj.floor}-layer-border-hover`, "visibility", leyerVisibility);
     });
 
   }
@@ -852,34 +863,26 @@ const Requests = () => {
   const hideFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
     var leyerVisibility;
 
-    if(!mapInstance.getSource("first-floor-border-area-source")) return;
-
     floorArray.forEach( (obj, index) => {
       leyerVisibility = 'none'
       if(obj.floor === floorNotToHide){
         leyerVisibility = 'visible'
       }
-
-      mapInstance.setLayoutProperty(`${index+1}-overlay`, "visibility", leyerVisibility);
-      if(obj.floor === 'second-floor'){
-          mapInstance.setLayoutProperty("area-layer", "visibility", leyerVisibility);
-          mapInstance.setLayoutProperty("hidden-area-layer-outline", "visibility", leyerVisibility);
-          mapInstance.setLayoutProperty("hidden-layer-border-hover", "visibility", leyerVisibility);
-          mapInstance.setLayoutProperty("hidden-layer-hover", "visibility", leyerVisibility);
-          return;
-      }
-
-        mapInstance.setLayoutProperty(`${obj.floor}-border-area-layer`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-border-area-layer-outline`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-border-layer-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-border-layer-border-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-area-layer`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-area-layer-outline`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-layer-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-mouseover-layer-border-hover`, "visibility", leyerVisibility);
-        mapInstance.setLayoutProperty(`${obj.floor}-wall-area-layer-outline`, "visibility", leyerVisibility);
+      mapInstance.setLayoutProperty(`${obj.name+'-'+obj.floor}-outline`, "visibility", leyerVisibility);
     });
+  }
 
+  
+  const hideMRHFloorSourcesAndLayers = (mapInstance, floorNotToHide) => {
+    var leyerVisibility;
+
+    MRHFloor.forEach( (obj, index) => {
+      leyerVisibility = 'none'
+      if(obj.floor === floorNotToHide){
+        leyerVisibility = 'visible'
+      }
+      mapInstance.setLayoutProperty(`${obj.name+'-'+obj.floor}-outline`, "visibility", leyerVisibility);
+    });
   }
 
   const hideAndShowPlacesSourcesAndLayers = (mapInstance, leyerVisibility) => {
@@ -890,24 +893,13 @@ const Requests = () => {
 
   const renderSourceAndLayer1 = (currentNumber) => {
     setBuildingClickedOn({ ...buildingClickedOn, active: parseInt(currentNumber) });
-
     hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
     hideFloorSourcesAndLayers(mapObj, "hide-all");
+    hideMRHFloorSourcesAndLayers(mapObj, "hide-all");
+    hideAndShowPlacesSourcesAndLayers(mapObj, "visible");
     switch (buildingClickedOn.building_name) {
       case "Wendt Library":
-        hideAndShowPlacesSourcesAndLayers(mapObj, "visible");
-        addRasterImageSourceAndLayerFirstFloor(mapObj);
-        firstFloorAreaSourceAndLayers(mapObj);
-
-        addRasterImageSourceAndLayerThirdFloor(mapObj);
-        thirdFloorAreaSourceAndLayers(mapObj);
-
-        addRasterImageSourceAndLayerFourthFloor(mapObj);
-        fourthFloorAreaSourceAndLayers(mapObj);
-
-        addRasterImageSourceAndLayerSecondFloor(mapObj);
-        hiddenAreaSourceAndLayers(mapObj);
-        renderSourceAndLayer("second-floor");
+        renderSourceAndLayer("first-floor");
         if( parseInt(currentNumber) === 1)
         renderSourceAndLayer("first-floor");
         if( parseInt(currentNumber) === 2)
@@ -917,6 +909,18 @@ const Requests = () => {
         if( parseInt(currentNumber) === 4)
         renderSourceAndLayer("fourth-floor");
         break;
+
+      case "Merit Residence Hall":
+        renderRMHSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 1)
+        renderRMHSourceAndLayer("first-floor");
+        if( parseInt(currentNumber) === 2)
+        renderRMHSourceAndLayer("second-floor");
+        if( parseInt(currentNumber) === 3)
+        renderRMHSourceAndLayer("third-floor");
+        if( parseInt(currentNumber) === 4)
+        renderRMHSourceAndLayer("fourth-floor");
+      break;
     
       default:
         loadUniversityGroundSourceAndLayer(mapObj);
@@ -943,859 +947,18 @@ const Requests = () => {
     setFloorArray(floorArrayUpdated);
     hideFloorSourcesAndLayers(mapObj, floorClicked);
   }
-  const fourthFloorAreaSourceAndLayers = (mapInstance) => {
-    // border layer working properly
-    if (mapInstance.getSource("fourth-floor-border-area-source") && mapInstance.getSource("fourth-floor-wall-area-source") && mapInstance.getSource("fourth-floor-mouseover-area-source")) return;
-    
-    mapInstance.addSource("fourth-floor-border-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.7aculd8s",
+
+  const renderRMHSourceAndLayer = (floorClicked, indexNumber) => {
+    let MRHFloorUpdated = MRHFloor.map((obj, index) => {
+        if(index === indexNumber)
+          return { ...obj, active: true}
+        return { ...obj, active: false}
     });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "fourth-floor-border-area-layer",
-        type: "fill",
-        source: "fourth-floor-border-area-source",
-        "source-layer": "wendt-library-floor4-border-ab2w8y",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "fourth-floor-border-area-layer-outline",
-      type: "line",
-      source: "fourth-floor-border-area-source",
-      "source-layer": "wendt-library-floor4-border-ab2w8y",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "fourth-floor-border-layer-hover",
-      type: "fill",
-      source: "fourth-floor-border-area-source",
-      "source-layer": "wendt-library-floor4-border-ab2w8y",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "fourth-floor-border-layer-border-hover",
-      type: "line",
-      source: "fourth-floor-border-area-source",
-      "source-layer": "wendt-library-floor4-border-ab2w8y",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "fourth-floor-border-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "fourth-floor-border-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("fourth-floor-border-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("fourth-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("fourth-floor-border-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("fourth-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "fourth-floor-border-area-layer", function () {
-      mapInstance.setFilter("fourth-floor-border-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("fourth-floor-border-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // mouse over layer working properly
-
-    mapInstance.addSource("fourth-floor-mouseover-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.6dr2uswq",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "fourth-floor-mouseover-area-layer",
-        type: "fill",
-        source: "fourth-floor-mouseover-area-source",
-        "source-layer": "wendt-library-floor4-mouseove-062v7j",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "fourth-floor-mouseover-area-layer-outline",
-      type: "line",
-      source: "fourth-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor4-mouseove-062v7j",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "fourth-floor-mouseover-layer-hover",
-      type: "fill",
-      source: "fourth-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor4-mouseove-062v7j",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "fourth-floor-mouseover-layer-border-hover",
-      type: "line",
-      source: "fourth-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor4-mouseove-062v7j",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "fourth-floor-mouseover-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "fourth-floor-mouseover-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("fourth-floor-mouseover-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("fourth-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("fourth-floor-mouseover-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("fourth-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "fourth-floor-mouseover-area-layer", function () {
-      mapInstance.setFilter("fourth-floor-mouseover-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("fourth-floor-mouseover-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // wall layer working properly
-
-    mapInstance.addSource("fourth-floor-wall-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.abmf2w7a",
-    });
-
-    mapInstance.addLayer({
-      id: "fourth-floor-wall-area-layer-outline",
-      type: "line",
-      source: "fourth-floor-wall-area-source",
-      "source-layer": "wendt-library-floor4-wall-722xg9",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-  };
-
-  const thirdFloorAreaSourceAndLayers = (mapInstance) => {
-    // border layer working properly
-    if (mapInstance.getSource("third-floor-border-area-source") && mapInstance.getSource("third-floor-mouseover-area-source") && mapInstance.getSource("third-floor-wall-area-source")) return;
-    
-    mapInstance.addSource("third-floor-border-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.6jzldszq",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "third-floor-border-area-layer",
-        type: "fill",
-        source: "third-floor-border-area-source",
-        "source-layer": "wendt-library-floor3-border-1ese1d",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "third-floor-border-area-layer-outline",
-      type: "line",
-      source: "third-floor-border-area-source",
-      "source-layer": "wendt-library-floor3-border-1ese1d",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "third-floor-border-layer-hover",
-      type: "fill",
-      source: "third-floor-border-area-source",
-      "source-layer": "wendt-library-floor3-border-1ese1d",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "third-floor-border-layer-border-hover",
-      type: "line",
-      source: "third-floor-border-area-source",
-      "source-layer": "wendt-library-floor3-border-1ese1d",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "third-floor-border-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "third-floor-border-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("third-floor-border-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("third-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("third-floor-border-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("third-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "third-floor-border-area-layer", function () {
-      mapInstance.setFilter("third-floor-border-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("third-floor-border-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // mouse over layer working properly
-
-    mapInstance.addSource("third-floor-mouseover-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.838gyqup",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "third-floor-mouseover-area-layer",
-        type: "fill",
-        source: "third-floor-mouseover-area-source",
-        "source-layer": "wendt-library-floor3-mouseove-8z84kw",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "third-floor-mouseover-area-layer-outline",
-      type: "line",
-      source: "third-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor3-mouseove-8z84kw",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "third-floor-mouseover-layer-hover",
-      type: "fill",
-      source: "third-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor3-mouseove-8z84kw",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "third-floor-mouseover-layer-border-hover",
-      type: "line",
-      source: "third-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor3-mouseove-8z84kw",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "third-floor-mouseover-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "third-floor-mouseover-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("third-floor-mouseover-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("third-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("third-floor-mouseover-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("third-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "third-floor-mouseover-area-layer", function () {
-      mapInstance.setFilter("third-floor-mouseover-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("third-floor-mouseover-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // wall layer working properly
-    mapInstance.addSource("third-floor-wall-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.a3kvaph7",
-    });
-
-    mapInstance.addLayer({
-      id: "third-floor-wall-area-layer-outline",
-      type: "line",
-      source: "third-floor-wall-area-source",
-      "source-layer": "wendt-library-floor3-walls-3tzq9s",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-  };
-
-  const firstFloorAreaSourceAndLayers = (mapInstance) => {
-    // border layer working properly
-    if (mapInstance.getSource("first-floor-border-area-source") && mapInstance.getSource("first-floor-mouseover-area-source") && mapInstance.getSource("first-floor-wall-area-source")) return;
-  
-
-    mapInstance.addSource("first-floor-border-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.6rrzegfn",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "first-floor-border-area-layer",
-        type: "fill",
-        source: "first-floor-border-area-source",
-        "source-layer": "wendt-library-floor1-border-a6mo9m",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "first-floor-border-area-layer-outline",
-      type: "line",
-      source: "first-floor-border-area-source",
-      "source-layer": "wendt-library-floor1-border-a6mo9m",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "first-floor-border-layer-hover",
-      type: "fill",
-      source: "first-floor-border-area-source",
-      "source-layer": "wendt-library-floor1-border-a6mo9m",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "first-floor-border-layer-border-hover",
-      type: "line",
-      source: "first-floor-border-area-source",
-      "source-layer": "wendt-library-floor1-border-a6mo9m",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "first-floor-border-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "first-floor-border-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("first-floor-border-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("first-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("first-floor-border-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("first-floor-border-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "first-floor-border-area-layer", function () {
-      mapInstance.setFilter("first-floor-border-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("first-floor-border-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // mouse over layer working properly
-    mapInstance.addSource("first-floor-mouseover-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.6zedsv7w",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "first-floor-mouseover-area-layer",
-        type: "fill",
-        source: "first-floor-mouseover-area-source",
-        "source-layer": "wendt-library-floor1-mouseove-53te26",
-        paint: {
-          'fill-outline-color': '#0066ff',
-          'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "first-floor-mouseover-area-layer-outline",
-      type: "line",
-      source: "first-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor1-mouseove-53te26",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "first-floor-mouseover-layer-hover",
-      type: "fill",
-      source: "first-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor1-mouseove-53te26",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "first-floor-mouseover-layer-border-hover",
-      type: "line",
-      source: "first-floor-mouseover-area-source",
-      "source-layer": "wendt-library-floor1-mouseove-53te26",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "first-floor-mouseover-area-layer", function (e) {
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-    });
-
-    mapInstance.on("mousemove", "first-floor-mouseover-area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("first-floor-mouseover-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("first-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("first-floor-mouseover-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("first-floor-mouseover-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "first-floor-mouseover-area-layer", function () {
-      mapInstance.setFilter("first-floor-mouseover-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("first-floor-mouseover-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-
-    // wall layer working properly
-    mapInstance.addSource("first-floor-wall-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.d1tp2dhy",
-    });
-
-    mapInstance.addLayer({
-      id: "first-floor-wall-area-layer-outline",
-      type: "line",
-      source: "first-floor-wall-area-source",
-      "source-layer": "wendt-library-floor1-wall-bexg1l",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-  };
-
-
-  const hiddenAreaSourceAndLayers = (mapInstance) => {
-    if (mapInstance.getSource("hidden-area-source")) return;
-
-    mapInstance.addSource("hidden-area-source", {
-      type: "vector",
-      url: "mapbox://alexmahnke.0ne2hfwr",
-    });
-    //set up data layers
-    mapInstance.addLayer(
-      {
-        id: "area-layer",
-        type: "fill",
-        source: "hidden-area-source",
-        "source-layer": "area_hidden_info-2lncd1",
-        paint: {
-          // 'fill-outline-color': '#0066ff',
-          // 'fill-color': '#0066ff',
-          "fill-opacity": 0,
-        },
-        "paint.tilted": {},
-      },
-      "water"
-    );
-
-    mapInstance.addLayer({
-      id: "hidden-area-layer-outline",
-      type: "line",
-      source: "hidden-area-source",
-      "source-layer": "area_hidden_info-2lncd1",
-      paint: {
-        "line-color": "#0066ff",
-        "line-width": 1,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: "hidden-layer-hover",
-      type: "fill",
-      source: "hidden-area-source",
-      "source-layer": "area_hidden_info-2lncd1",
-      layout: {},
-      paint: {
-        "fill-outline-color": "#ff0000",
-        "fill-color": "#ffffff",
-        "fill-opacity": 0.5,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.addLayer({
-      id: "hidden-layer-border-hover",
-      type: "line",
-      source: "hidden-area-source",
-      "source-layer": "area_hidden_info-2lncd1",
-      paint: {
-        "line-color": "#ffffff",
-        "line-width": 4,
-      },
-      filter: ["==", "Shape_Area", ""],
-    });
-
-    mapInstance.on("click", "area-layer", function (e) {
-      var el = document.getElementById("slide-in-request-penel");
-      if (el) {
-        if (!el.classList.contains("show")) {
-          el.classList.add("show");
-        }
-      }
-
-      var features = e.features[0];
-      var props = features.properties;
-      var coordinates = features.geometry.coordinates;
-      setBuildingInfo({ ...buildingInfo, doors: props.Number });
-      // new mapboxgl.Popup()
-      // .setLngLat(coordinates)
-      // .setHTML("<div className='p-3'><h3>" + props.Name + "</h3></div>")
-      // .addTo(mapInstance);
-    });
-
-    mapInstance.on("mousemove", "area-layer", (e) => {
-      var features = e.features;
-      // Single out the first found feature.
-      var ft = features[0];
-      var showTooltip = ft && ft.properties;
-      //  Add features that share the same PARCEL_TYP to the hover layer.
-      if (showTooltip) {
-        mapInstance.setFilter("hidden-layer-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-
-        mapInstance.setFilter("hidden-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          ft.properties.Shape_Area,
-        ]);
-      } else {
-        mapInstance.setFilter("hidden-layer-hover", ["in", "Shape_Area", ""]);
-        mapInstance.setFilter("hidden-layer-border-hover", [
-          "in",
-          "Shape_Area",
-          "",
-        ]);
-      }
-    });
-    mapInstance.on("mouseleave", "area-layer", function () {
-      mapInstance.setFilter("hidden-layer-hover", ["in", "ALIAS_NAME", ""]);
-      mapInstance.setFilter("hidden-layer-border-hover", [
-        "in",
-        "ALIAS_NAME",
-        "",
-      ]);
-    });
-  };
-  //to delete
-  const removeAllSourcesAndLayers = (mapInstance) => {
-    
-    removeAllFloorsSourcesAndLayers(mapInstance);
-    removePlacesSourceAndLeyers(mapInstance);
-  };
-
-  //to delete
-  const removeAllFloorsSourcesAndLayers = (mapInstance) => {
-    
-    if (mapInstance.getSource("hidden-area-source")) {
-      mapInstance.removeLayer("area-layer");
-      mapInstance.removeLayer("hidden-area-layer-outline");
-      mapInstance.removeLayer("hidden-layer-border-hover");
-      mapInstance.removeLayer("hidden-layer-hover");
-      mapInstance.removeSource("hidden-area-source");
-    }
-    
-    floorArray.forEach( (obj) => {
-
-      if(obj.floor === 'second-obj.floor'){
-          return;
-      }
-
-      if (mapInstance.getSource(`${obj.floor}-border-area-source`)) {
-        mapInstance.removeLayer(`${obj.floor}-border-area-layer`);
-        mapInstance.removeLayer(`${obj.floor}-border-area-layer-outline`);
-        mapInstance.removeLayer(`${obj.floor}-border-layer-hover`);
-        mapInstance.removeLayer(`${obj.floor}-border-layer-border-hover`);
-        mapInstance.removeSource(`${obj.floor}-border-area-source`);
-      }
-      if (mapInstance.getSource(`${obj.floor}-mouseover-area-source`)) {
-        mapInstance.removeLayer(`${obj.floor}-mouseover-area-layer`);
-        mapInstance.removeLayer(`${obj.floor}-mouseover-area-layer-outline`);
-        mapInstance.removeLayer(`${obj.floor}-mouseover-layer-hover`);
-        mapInstance.removeLayer(`${obj.floor}-mouseover-layer-border-hover`);
-        mapInstance.removeSource(`${obj.floor}-mouseover-area-source`);
-      }
-      if (mapInstance.getSource(`${obj.floor}-wall-area-source`)) {
-        mapInstance.removeLayer(`${obj.floor}-wall-area-layer-outline`);
-        mapInstance.removeSource(`${obj.floor}-wall-area-source`);
-      }
-    });
-
-    if (mapInstance.getSource("sfRasterImage")) {
-      mapInstance.removeLayer("overlay");
-      mapInstance.removeSource("sfRasterImage");
-    }
+    setMRHFloor(MRHFloorUpdated);
+    hideMRHFloorSourcesAndLayers(mapObj, floorClicked);
   }
 
-  //to delete
-  const removePlacesSourceAndLeyers = (mapInstance) => {
-    if (mapInstance.getSource("places")) {
-      mapInstance.removeLayer("places");
-      mapInstance.removeLayer("building-labels");      
-      mapInstance.removeSource("places");
-    }
-  }
+
 
   const toggleView = () => {
     setViewIn3d(!viewIn3d);
@@ -1817,28 +980,6 @@ const Requests = () => {
       setPitch(0);
       // setBearing(0);
     }
-  };
-  const addRasterImageSourceAndLayerSecondFloor = (mapInstance) => {
-    if (mapInstance.getSource("sfRasterImage")) return;
-
-    mapInstance.addSource("sfRasterImage", {
-      type: "image",
-      url: `../raster-image/Layout.png`,
-      coordinates: [
-        [-89.408918, 43.071745],
-        [-89.408386, 43.071745],
-        [-89.408386, 43.0712],
-        [-89.408918, 43.0712],
-      ],
-    });
-    mapInstance.addLayer({
-      id: "2-overlay",
-      source: "sfRasterImage",
-      type: "raster",
-      // paint: {
-      //   'raster-opacity': 0.85,
-      // },
-    });
   };
 
   const laod3dBuildings = (map) => {
@@ -1903,7 +1044,6 @@ const Requests = () => {
           
           var tileQuery = 'https://api.mapbox.com/v4/alexmahnke.0ywvbtoi/tilequery/' + lngLat.lng + ","+ lngLat.lat + '.json?radius=5&limit=1&geometry=polygon&dedupe&access_token=pk.eyJ1IjoiYWxleG1haG5rZSIsImEiOiJja25oc3psc2cwbWd2MnZudzA1d2dpOW5wIn0.w7LO2v86HxcaZUPdkmFk7g';
           const res = await axios.get(`${tileQuery}`);
-          
           if(res.status === 200){
               if(res.data.features[0].properties === !undefined)
                   return;
@@ -1913,6 +1053,7 @@ const Requests = () => {
                     setBuildingClickedOn(obj);
                     hideEngineeringHallFloorSourcesAndLayers(mapObj, "hide-all");
                     hideFloorSourcesAndLayers(mapObj, "hide-all");
+                    hideMRHFloorSourcesAndLayers(mapObj, "hide-all");
                     if( mapObj.getZoom() < 18 ){
                       mapObj.flyTo({
                         center: [lngLat.lng, lngLat.lat],
@@ -1942,80 +1083,6 @@ const Requests = () => {
         });
   }
 
-  const addRasterImageSourceAndLayerThirdFloor = (mapInstance) => {
-    if (mapInstance.getSource("third-floor-RasterImage")) return;
-
-    mapInstance.addSource("third-floor-RasterImage", {
-      type: "image",
-      url: `../raster-image/3.png`,
-      coordinates: [
-        // [-89.40830000000, 43.071700],
-        // [-89.40890000000, 43.071200],
-        // [-89.40830000000, 43.07120000000],
-        // [-89.40890000000, 43.07170000000],
-        [-89.40892029, 43.07186508],
-        [-89.40809631, 43.07186508],
-        [-89.40809631, 43.07101059],
-        [-89.40892029, 43.07101059],
-      ],
-    });
-    mapInstance.addLayer({
-      id: "3-overlay",
-      source: "third-floor-RasterImage",
-      type: "raster",
-      // paint: {
-      //   'raster-opacity': 0.85,
-      // },
-    });
-  };
-  
-  const addRasterImageSourceAndLayerFourthFloor = (mapInstance) => {
-    if (mapInstance.getSource("fourth-floor-RasterImage")) return;
-
-    mapInstance.addSource("fourth-floor-RasterImage", {
-      type: "image",
-      url: `../raster-image/4.png`,
-      coordinates: [
-        [-89.40892029, 43.07186508],
-        [-89.40809631, 43.07186508],
-        [-89.40809631, 43.07101059],
-        [-89.40892029, 43.07101059],
-      ],
-    });
-
-    mapInstance.addLayer({
-      id: "4-overlay",
-      source: "fourth-floor-RasterImage",
-      type: "raster",
-      // paint: {
-      //   'raster-opacity': 0.85,
-      // },
-    });
-  };
-
-  const addRasterImageSourceAndLayerFirstFloor = (mapInstance) => {
-    if (mapInstance.getSource("first-floor-RasterImage")) return;
-
-    mapInstance.addSource("first-floor-RasterImage", {
-      type: "image",
-      url: `../raster-image/1.png`,
-      coordinates: [
-        [-89.40892029, 43.07186508],
-        [-89.40809631, 43.07186508],
-        [-89.40809631, 43.07101059],
-        [-89.40892029, 43.07101059],
-      ],
-    });
-
-    mapInstance.addLayer({
-      id: "1-overlay",
-      source: "first-floor-RasterImage",
-      type: "raster",
-      // paint: {
-      //   'raster-opacity': 0.85,
-      // },
-    });
-  };
 
   const loadDoorAnimatedMarkerSourcesAndLayers = () => {
 
@@ -2314,6 +1381,47 @@ const Requests = () => {
     });
   }
 
+  
+  const loadAllSourcesAndLayers = mapInstance => {
+    floorArray.map((obj) => {
+      if (mapInstance.getSource(`${obj.name+'-'+obj.floor}-source`)) return;
+      mapInstance.addSource(`${obj.name+'-'+obj.floor}-source`, {
+        type: "vector",
+        url: `mapbox://${obj.layer_id}`,
+      });
+      mapInstance.addLayer({
+        id: `${obj.name+'-'+obj.floor}-outline`,
+        type: "line",
+        source: `${obj.name+'-'+obj.floor}-source`,
+        "source-layer": `${obj.layer_name}`,
+        paint: {
+          "line-color": "#0066ff",
+          "line-width": 1,
+        },
+      });
+    });
+
+    MRHFloor.map((obj) => {
+      if (mapInstance.getSource(`${obj.name+'-'+obj.floor}-source`)) return;
+      mapInstance.addSource(`${obj.name+'-'+obj.floor}-source`, {
+        type: "vector",
+        url: `mapbox://${obj.layer_id}`,
+      });
+      mapInstance.addLayer({
+        id: `${obj.name+'-'+obj.floor}-outline`,
+        type: "line",
+        source: `${obj.name+'-'+obj.floor}-source`,
+        "source-layer": `${obj.layer_name}`,
+        paint: {
+          "line-color": "#0066ff",
+          "line-width": 1,
+        },
+      });
+    });
+
+  }
+
+
   useEffect(() => {
     getRequestListSheet();
     getBuildingList();
@@ -2337,9 +1445,19 @@ const Requests = () => {
     map.on("load", function () {
       loadGeoJsonPlacesSourcesAndLayers(map);
       loadDoorAnimatedMarkerSourcesAndLayers();
-      // loadUniversityGroundSourceAndLayer(map);
-      // loadEngineeringHallsSourcesAndLayers(map);
+      loadUniversityGroundSourceAndLayer(map);
+      loadEngineeringHallsSourcesAndLayers(map);
       // loadBodgery(map);
+
+
+      
+      loadAllSourcesAndLayers(map);
+
+
+      // hidding all the visible layers 
+      hideEngineeringHallFloorSourcesAndLayers(map, "hide-all");
+      hideFloorSourcesAndLayers(map, "hide-all");
+      hideMRHFloorSourcesAndLayers(map, "hide-all");
       map.on("zoom", function () {
         var currentZoom = map.getZoom();
 
@@ -2347,19 +1465,8 @@ const Requests = () => {
           // removePlacesSourceAndLeyers(map);
 
 
-          // hideAndShowPlacesSourcesAndLayers(map, "visible");
-          // addRasterImageSourceAndLayerFirstFloor(map);
-          // firstFloorAreaSourceAndLayers(map);
-
-          // addRasterImageSourceAndLayerThirdFloor(map);
-          // thirdFloorAreaSourceAndLayers(map);
-
-          // addRasterImageSourceAndLayerFourthFloor(map);
-          // fourthFloorAreaSourceAndLayers(map);
-
-          // addRasterImageSourceAndLayerSecondFloor(map);
-          // hiddenAreaSourceAndLayers(map);
-          // renderSourceAndLayer("second-floor");
+          hideAndShowPlacesSourcesAndLayers(map, "visible");
+          renderSourceAndLayer("second-floor");
           var flc_el = document.getElementById("floor-list-container");
           if (flc_el) {
             if (!flc_el.classList.contains("show")) {
@@ -2370,7 +1477,6 @@ const Requests = () => {
         if (currentZoom < 18) {
           var flc_el = document.getElementById("floor-list-container");
           if (flc_el) {
-            console.log(flc_el.classList.contains("show"));
             if (!flc_el.classList.contains("show")) {
               flc_el.classList.remove("show");
             }
